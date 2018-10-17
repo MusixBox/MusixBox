@@ -1,5 +1,34 @@
-#blue {
-	background-color: blue;
-	height: 100px;
-	width: 100px;
+#content {
+  position: absolute;
+  width: auto;
+  height: auto;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+}
+
+.centerbox {
+  /* flexbox, por favor */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-pack: center;
+  -moz-box-align: center;
+  width: 100%;
+  height: 100%;
+  margin: 0; padding: 0;
+}
+body, html { width: 100%; height: 100%; padding: 0; margin: 0; }
+canvas {
+  /* border-radius: 30px;  Border radiuses don't seem to work with putImageData */
+  box-shadow: 0 0 10px #777;
+  width: 1024px;
+  height: 768px;
+}
+body {
+  background-color: #eee;
 }
