@@ -1,35 +1,27 @@
 var synth = new Tone.AMSynth().toMaster()
 
-//attach a listener to all of the buttons
-document.querySelectorAll('button').forEach(function(button){
-  button.addEventListener('mousedown', function(e){
-    //play the note on mouse down
-    synth.triggerAttack(e.target.textContent)
-  })
-  button.addEventListener('mouseup', function(e){
-    //release on mouseup
-    synth.triggerRelease()
-  })
-})
-
-// noise.seed(Math.random());
 noise.seed(0);
 
-var value = 0,
-value1 = 0,
-lastFrameTimeMs = 0,
-lastNoteTimeMs = 0,
-maxFPS=60;
+var pitchPerlin = 0;
+var durationPerlin = 0;
 
-var date = new Date();
+var lastFrameTimeMs = 0;
+var lastNoteTimeMs = 0;
+var maxFPS=60;
 
-var baseTime = 500;
-var curDiff = 500;
+var baseDuration = 500;
+var nextDuration = 500;
 
-notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+var minDurationMultiple = 0.5;
+var numDurations = 4.0;
+
+var Cmaj = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+
+var bits = 256.0;
+
 function update(delta, timestamp) { 
-  value = (noise.perlin2(timestamp / 1000, 0) + 0.5) * 256.0;
-  value1 = (noise.perlin2(timestamp / 1000, 50) + 0.5);
+  pitchPerlin = (noise.perlin2(timestamp / 1000, 0) + 0.5) * bits;
+  durationPerlin = (noise.perlin2(timestamp / 1000, 50) + 0.5);
 }
  
 function mainLoop(timestamp) {
@@ -43,15 +35,16 @@ function mainLoop(timestamp) {
  
   update(delta, timestamp); // pass delta to update
   
-  
-  document.body.style.backgroundColor = "rgb(" + value + "," + value + "," + value + ")";
+  document.body.style.backgroundColor = "rgb(" + pitchPerlin + "," + 
+                                                 pitchPerlin + "," + 
+                                                 pitchPerlin + ")";
 
-
-  if (timestamp - lastNoteTimeMs > curDiff) {
-    synth.triggerAttackRelease(notes[Math.floor(8.0 * (value/256.0))], "32n");
+  if (timestamp - lastNoteTimeMs > nextDuration) {
+    synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin/bits))], "32n");
     lastNoteTimeMs = timestamp;
 
-    curDiff = baseTime * (0.5 * (Math.ceil(value1 * 4.0)));
+    // ceil, so "min duration" is at least 0.5 * baseDuration
+    nextDuration = baseDuration * (minDurationMultiple * (Math.ceil(durationPerlin * numDurations)));
   }
 
   requestAnimationFrame(mainLoop);
