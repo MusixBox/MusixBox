@@ -25,13 +25,15 @@ var nextDuration = 500;
 var minDurationMultiple = 0.5;
 var numDurations = 4.0;
 
+
+
 var Cmaj = ['C5', 'C4', 'D5', 'A4', 'E5', 'F4', 'F5', 'G4', 'G5', 'A5', 'C6'];
 
 var bits = 256.0;
 
 function update(delta, timestamp) { 
-  pitchPerlin = (noise.perlin2(timestamp / 1000, 0) + 0.5) * bits;
-  durationPerlin = (noise.perlin2(timestamp / 1000, 50) + 0.5);
+  pitchPerlin = (noise.perlin2(timestamp / 10000, 0) + 0.5) * bits;
+  durationPerlin = (noise.perlin2(timestamp / 10000, 50) + 0.5);
 }
  
 function mainLoop(timestamp) {
