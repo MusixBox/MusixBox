@@ -26,13 +26,22 @@ var minDurationMultiple = 0.5;
 var numDurations = 4.0;
 
 
+var nextNote = 0;
+var Amin = ['A3', 'E4', 'A4', 'B4', 'C5', 'E5'];
+var Emin = ['E3', 'B3', 'E4', 'G4', 'A4', 'B4'];
+var Fmaj = ['F3', 'C4', 'F4', 'G4', 'A4', 'C5'];
+var Gmaj = ['G3', 'D4', 'G4', 'A4', 'B4', 'D5'];
+var Cmaj = ['C4', 'G4', 'C5', 'D5', 'E5', 'G5'];
+var chords = [Amin, Emin, Fmaj, Gmaj, Cmaj];
+var curChord = Cmaj;
+
 
 var Cmaj = ['C5', 'C4', 'D5', 'A4', 'E5', 'F4', 'F5', 'G4', 'G5', 'A5', 'C6'];
 
 var bits = 256.0;
 
 function update(delta, timestamp) { 
-  pitchPerlin = (noise.perlin2(timestamp / 10000, 0) + 0.5) * bits;
+  pitchPerlin = (noise.perlin2(timestamp / 10000, 0) + 0.5);
   durationPerlin = (noise.perlin2(timestamp / 10000, 50) + 0.5);
 }
  
@@ -47,12 +56,20 @@ function mainLoop(timestamp) {
  
   update(delta, timestamp); // pass delta to update
   
-  document.body.style.backgroundColor = "rgb(" + pitchPerlin + "," + 
-                                                 pitchPerlin + "," + 
-                                                 pitchPerlin + ")";
+  document.body.style.backgroundColor = "rgb(" + pitchPerlin * 256.0 + "," + 
+                                                 pitchPerlin * 256.0 + "," + 
+                                                 pitchPerlin * 256.0 + ")";
 
   if (timestamp - lastNoteTimeMs > nextDuration) {
-    synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin/bits))], "42n");
+
+
+    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin))], "42n");
+    synth.triggerAttackRelease(curChord[nextNote], "32n");
+    nextNote += 1;
+    if (nextNote > curChord.length) {
+      nextNote = 0;
+      curChord = chords[Math.floor(chords.length * pitchPerlin)];
+    }
     lastNoteTimeMs = timestamp;
 
     // ceil, so "min duration" is at least 0.5 * baseDuration
