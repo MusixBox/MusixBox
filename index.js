@@ -1,6 +1,16 @@
-var synth = new Tone.AMSynth().toMaster()
+var synth = new Tone.PolySynth(6, Tone.Synth).toMaster();
 
 noise.seed(0);
+
+// synth.set("detune", -1200);
+
+for (var i = 0; i < synth.voices.length; i++) {
+  synth.voices[i].envelope.release = 20.0;
+  synth.voices[i].oscillator._oscillator._type = "sine";
+
+  console.log(synth.voices[i]);
+
+}
 
 var pitchPerlin = 0;
 var durationPerlin = 0;
@@ -15,7 +25,7 @@ var nextDuration = 500;
 var minDurationMultiple = 0.5;
 var numDurations = 4.0;
 
-var Cmaj = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+var Cmaj = ['C5', 'C4', 'D5', 'A4', 'E5', 'F4', 'F5', 'G4', 'G5', 'A5', 'C6'];
 
 var bits = 256.0;
 
@@ -40,7 +50,7 @@ function mainLoop(timestamp) {
                                                  pitchPerlin + ")";
 
   if (timestamp - lastNoteTimeMs > nextDuration) {
-    synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin/bits))], "32n");
+    synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin/bits))], "42n");
     lastNoteTimeMs = timestamp;
 
     // ceil, so "min duration" is at least 0.5 * baseDuration
