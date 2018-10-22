@@ -44,6 +44,11 @@ function updatePerlin(delta, timestamp) {
   durationPerlin = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
   chordSizePerlin = (simplex.noise3d(timestamp / 5000, 2000, 0) + 1.0) / 2.0;
 }
+
+function getTimestamp()
+{
+  return lastFrameTimeMs;
+}
  
 function mainLoop(timestamp) {
   if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
@@ -64,6 +69,8 @@ function mainLoop(timestamp) {
 
 
     // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin))], "42n");
+    var curNote = curChord[nextNote];
+    onNotePlayedCallback(curNote, lastNoteTimeMs);
     synth.triggerAttackRelease(curChord[nextNote], "32n");
 
     lastNoteTimeMs = timestamp;
@@ -79,6 +86,7 @@ function mainLoop(timestamp) {
       nextNote = 0;
       curBase = moodChords[Math.floor(moodChords.length * pitchPerlin)];
       curChord = getSimpleChord(curBase, 1, Math.ceil(chordSizePerlin * 5.0), 0, 0, false);
+      onChordPlayedCallback(curChord, lastNoteTimeMs);
       nextDuration *= 16;
     }
   }
