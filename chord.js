@@ -1,5 +1,6 @@
 var chordData = {
 	"baseOctave": 3,
+	"melodyOctave": 5,
 	"scale": ["C", "D", "E", "F", "G", "A", "B"],
 	"chords": ["C", "Dm", "Em", "F", "G", "Am"],
 	"basicChordNotes": [1, 5, 8, 10, 12, 15],
@@ -18,6 +19,9 @@ function getOctave(note) {
 }
 function toNote(relative, octave) {
 	return chordData.scale[relative - 1] + octave;
+}
+function isMinor(note) {
+	return note.includes('m');
 }
 
 function getIntervalNote(note, interval) {
@@ -67,6 +71,21 @@ function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSp
 
 	shuffledBright = chordData.colorNotes.bright;
 	shuffledDark = chordData.colorNotes.dark;
+
+	// replace minor low seconds with fourths instead.
+	// replace minor high sixths with fourths instead.
+	if (isMinor(chord)) {
+		for (var i = 0; i < shuffledDark.length; i++) {
+			if (shuffledDark[i] == 2) {
+				shuffledDark[i] = 4;
+			}
+		}
+		for (var i = 0; i < shuffledBright.length; i++) {
+			if (shuffledBright[i] == 13) {
+				shuffledBright[i] = 11;
+			}
+		}
+	}
 
 	chordNotes = chordNotes.concat(shuffledBright.sort(() => 0.5 - Math.random()).slice(0, numBright));
 	chordNotes = chordNotes.concat(shuffledDark.sort(() => 0.5 - Math.random()).slice(0, numDark));
