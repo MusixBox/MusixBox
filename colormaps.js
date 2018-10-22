@@ -1,3 +1,6 @@
+baseColor = 0x99b3b3;
+baseColorNoise = 0.1;
+// baseColor = 0x6b8383;
 colormap = {
     'default' :
     [
@@ -11,27 +14,26 @@ colormap = {
     ],
     'Am' :
     [
-        0xff0000
+        0xff77a6
     ],
     'C' :
     [
-        0x00ff00
+        0xffffff
     ],
     'Dm' :
     [
-        0x0000ff
+        0xffc7b2
     ],
     'Em' :
     [
-        0xffff00
+        0xa0fefe
     ],
     'F' :
     [
-        0xff00ff
+        0xb6ffbc
     ],
     'G' :
     [
-        0x00ffff
+        0xffbbff
     ],
-
-}
+};

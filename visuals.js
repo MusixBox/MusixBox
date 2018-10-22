@@ -17,6 +17,7 @@ geometry.fromGeometry(geoRef);
 var positions = geometry.getAttribute( 'position' );
 var normals = geometry.getAttribute( 'normal' );
 geometry.computeVertexNormals();
+var colors = geometry.getAttribute( 'color' );
 
 var vertBase = [];
 var vertOffset = [];
@@ -46,20 +47,6 @@ for(var i = 0; i < indices.array.length; i++)
     vertexMap[indices.array[i]].push(i);
   }
 geometry.addAttribute ( 'indices', indices );
-
-
-// Color each face a random color
-var colors = geometry.getAttribute('color');
-for(var i = 0; i < colors.count; i+=3)
-{
-  var c = new THREE.Vector3(Math.random(), Math.random(), Math.random());
-  // var c = new THREE.Color(0x000000).lerp(
-  //   new THREE.Color(0xffffff),
-  //   (i / colors.count));
-  colors.setXYZ(i+0, c.r, c.g, c.b);
-  colors.setXYZ(i+1, c.r, c.g, c.b);
-  colors.setXYZ(i+2, c.r, c.g, c.b);
-}
 
 
 // Create default material - unshaded
@@ -129,8 +116,8 @@ var newChordReady = false;
 var chordObj = undefined;
 var noteColor = undefined;
 
-var baseColor = new THREE.Color(0.6, 0.7, 0.7);
-setBaseColor(baseColor);
+var bc = new THREE.Color(baseColor);
+setBaseColor(bc, baseColorNoise);
 var baseColors = [];
 for(var i = 0; i < colors.count; i++)
 {
@@ -188,12 +175,12 @@ function onChordPlayedCallback(chord, timeMS)
   }
 }
 
-function setBaseColor(color)
+function setBaseColor(color, noise)
 {
   // Color each face a random color
   for(var i = 0; i < colors.count; i+=3)
   {
-    var n = Math.random() * 0.2 - 0.1;
+    var n = vertNoise[i] * noise - (noise/2);
     var c = new THREE.Color(color);
     colors.setXYZ(i+0, c.r + n, c.g + n, c.b + n);
     colors.setXYZ(i+1, c.r + n, c.g + n, c.b + n);
@@ -201,21 +188,21 @@ function setBaseColor(color)
   }
 }
 
-function setNormalBasedColor(normalToColor)
+function setNormalBasedColor(normalToColor, noise)
 {
   // Color each face a random color
   for(var i = 0; i < colors.count; i+=3)
   {
-    var n = new THREE.Vector3(
+    var normal = new THREE.Vector3(
       (normals.getX(i) + normals.getX(i+1) + normals.getX(i+2)) * 0.333,
       (normals.getY(i) + normals.getY(i+1) + normals.getY(i+2)) * 0.333,
       (normals.getZ(i) + normals.getZ(i+1) + normals.getZ(i+2)) * 0.333
     ).normalize().applyEuler(cube.rotation);
-    var noise = vertNoise[i] * 0.2 - 0.1;
-    var c = normalToColor(i, n);
-    colors.setXYZ(i+0, c.r + noise, c.g + noise, c.b + noise);
-    colors.setXYZ(i+1, c.r + noise, c.g + noise, c.b + noise);
-    colors.setXYZ(i+2, c.r + noise, c.g + noise, c.b + noise);
+    var n = vertNoise[i] * noise - (noise/2);
+    var c = normalToColor(i, normal);
+    colors.setXYZ(i+0, c.r + n, c.g + n, c.b + n);
+    colors.setXYZ(i+1, c.r + n, c.g + n, c.b + n);
+    colors.setXYZ(i+2, c.r + n, c.g + n, c.b + n);
   }
 }
 
@@ -276,7 +263,7 @@ for(var i = 0; i < vertexMap.length; i++)
     // var w = new THREE.Color(1,1,1);
     // var newColor = b.lerp(w, hiFreqNormal);
     return newColor;
-});
+}, baseColorNoise);
 
   var baseAmplitude = 0.05;
   var baseFreq = 5;
