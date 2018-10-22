@@ -9,29 +9,66 @@ for (var i = 0; i < synth.voices.length; i++) {
   // console.log(synth.voices[i]);
 }
 
-
-// seed noise
-var date = new Date();
-noise.seed(date.getTime());
+// create simplex noise
 var simplex = new SimplexNoise();
 
+/**
+ * noise globals that controls various aspects of sound
+ * 
+ * pitchNoise
+ *  *- controls what chord to play.
+ * durationNoise
+ *  *- controls how fast the arpeggio is, 
+ *   - and also how soon to play the next chord
+ * chordSizeNoise
+ *  *- controls how large the chord is
+ *   - larger chords also get more color notes
+ */ 
 var pitchNoise = 0;
 var durationNoise = 0;
 var chordSizeNoise = 0;
 
+/**
+ * globals that keep track of frame times for delta timing
+ */
 var lastFrameTimeMs = 0;
 var lastNoteTimeMs = 0;
 var maxFPS=60;
 
+/**
+ * globals that set arpeggio and chord "speed"
+ */
 var arpeggioSpeed = 80;
 var nextDuration = 500;
 
+/**
+ * globals that set the possible variances on note and chord "speed"
+ */
 var minDurationMultiple = 0.5;
 var numDurations = 4.0;
 
-var nextNote = 0;
 
+/**
+ * a brief ordering of some chords by "mood";
+ * sad comes first, happy comes last.
+ */
 var moodChords = ['Am', 'Em', 'F', 'G', 'C'];
+
+/**
+ * globals that keep track of what's to play next
+ * 
+ * nextNote
+ *  *- what is the next note in the chord to be played (low to high)
+ * nextChord
+ *  *- what is the next chord to be played
+ * nextChordSize
+ *  *- how big will the next chord be
+ * nextBrightNotes
+ *  *- how many bright color notes will be played in the next chord
+ * nextDarkNotes
+ *  *- how many dark color notes will be played in the next chord
+ */
+var nextNote = 0;
 
 var nextBase = 'C';
 var nextChord = getSimpleChord(nextBase, 1, 3, 0, 0, false);
@@ -39,34 +76,36 @@ var nextChordSize = 3;
 var nextBrightNotes = 0;
 var nextDarkNotes = 0;
 
-// update simplex noises
+// update simplex noise data (called every frame)
 function updateNoise(delta, timestamp) { 
-  // pitchNoise = (noise.perlin2(timestamp / 10000, 0) + 0.5);
-  // durationNoise = (noise.perlin2(timestamp / 10000, 1000) + 0.5);
-  // chordSizeNoise = (noise.perlin2(timestamp / 10000, 2000) + 0.5);
   pitchNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
   durationNoise = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
   chordSizeNoise = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
 }
- 
+
+// main update loop
 function mainLoop(timestamp) {
   if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
+    // if we're not at the next frame, just do nothing
+    // still request next frame just in case next frame we do something
     requestAnimationFrame(mainLoop);
     return;
   }
+
+  // update frame timing issues, set delta
   lastFrameTimeMs = timestamp;
-  delta = timestamp - lastFrameTimeMs; // get the delta time since last frame
+  delta = timestamp - lastFrameTimeMs;
   lastFrameTimeMs = timestamp;
  
-  updateNoise(delta, timestamp); // pass delta to updateNoise
+  updateNoise(delta, timestamp);
   
+  // change document background color
   document.body.style.backgroundColor = "rgb(" + pitchNoise * 256.0 + "," + 
                                                  pitchNoise * 256.0 + "," + 
                                                  pitchNoise * 256.0 + ")";
 
+  // should we play the next note?
   if (timestamp - lastNoteTimeMs > nextDuration) {
-
-
     // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchNoise))], "42n");
     synth.triggerAttackRelease(nextChord[nextNote], "32n");
 
@@ -76,14 +115,19 @@ function mainLoop(timestamp) {
     nextDuration = arpeggioSpeed * (minDurationMultiple * (Math.ceil(durationNoise * numDurations)));
 
     nextNote += 1;
+
+    // when our next note is past our chord length
+    // (i.e. as we're playing the last note in the chord)
     if (nextNote > nextChord.length) {
       console.log(nextBase);
       console.log(nextChord);
 
+      // figure out what we play next
       nextNote = 0;
       nextBase = moodChords[Math.floor(moodChords.length * pitchNoise)];
-
       nextChordSize = Math.floor(chordSizeNoise * 5.0);
+
+      // add color notes for large chords
       if (nextChordSize > 3) {
         nextBrightNotes = 1;
       } 
@@ -91,6 +135,8 @@ function mainLoop(timestamp) {
         nextDarkNotes = 1;
       }
       nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
+
+      // wait longer between chords than between notes in a chord
       nextDuration *= 16;
     }
   }
