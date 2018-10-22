@@ -4,7 +4,7 @@ var chordData = {
 	"chords": ["C", "Dm", "Em", "F", "G", "Am"],
 	"basicChordNotes": [1, 5, 8, 10, 12, 15],
 	"colorNotes": {
-		"bright": [9, 13, 15],
+		"bright": [9, 13],
 		"dark": [2, 7],
 	},
 };
@@ -54,16 +54,20 @@ function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSp
 		chordNotes = chordData.basicChordNotes.slice(0, numBaseNotes);
 	}
 
-	chordNotes = chordNotes.concat(chordData.colorNotes.bright.slice(0, numBright));
-	chordNotes = chordNotes.concat(chordData.colorNotes.dark.slice(0, numDark));
+	shuffledBright = chordData.colorNotes.bright;
+	shuffledDark = chordData.colorNotes.dark;
+
+	chordNotes = chordNotes.concat(shuffledBright.sort(() => 0.5 - Math.random()).slice(0, numBright));
+	chordNotes = chordNotes.concat(shuffledDark.sort(() => 0.5 - Math.random()).slice(0, numDark));
 
 	chordNotes = chordNotes.sort((a, b) => a - b);
 	return chordNotes.map(rel => getIntervalNote(chord + chordData.baseOctave, rel));
 }
-console.log("Basic         : " + getBasicChord("C"));
-console.log("Simple, dense : " + getSimpleChord("C", 1, 4, 0, 0, false));
-console.log("Simple, sparse: " + getSimpleChord("C", 1, 4, 0, 0, true));
-console.log("Simple, color : " + getSimpleChord("C", 1, 2, 2, 1, false));
+
+// console.log("Basic         : " + getBasicChord("C"));
+// console.log("Simple, dense : " + getSimpleChord("C", 1, 4, 0, 0, false));
+// console.log("Simple, sparse: " + getSimpleChord("C", 1, 4, 0, 0, true));
+// console.log("Simple, color : " + getSimpleChord("C", 1, 2, 2, 1, false));
 
 
 
