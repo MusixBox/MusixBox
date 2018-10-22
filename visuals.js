@@ -133,6 +133,7 @@ if (!String.format) {
 }
 
 var numNotes = 0;
+var nextNumNotes = 0;
 var currIndex = 0;
 var noteTime = 0;
 var newChordReady = false;
@@ -158,18 +159,20 @@ function onNotePlayedCallback(note, timeMS)
     {
       currIndex = -1;
       newChordReady = false;
+      numNotes = nextNumNotes;
     }
     var tone = note[note.search(/[A-G]/)];
     var octave = note[note.search(/[0-9]/)];
     var sharp = note.search("#") != -1;
     var flat = note.search("b") != -1;
-    console.log(
-      String.format("Note played: {0} {1} {2}{3}", 
-        tone, octave, sharp ? "SHARP" : "" + " ", flat ? "FLAT" : "")
-      );
     currIndex++;
     noteTime = timeMS;
     noteColor = new THREE.Color(rainbowColorMap[tone]);
+    console.log(
+      String.format("Note played: {0} {1} {2}{3} {4} {5}", 
+        tone, octave, sharp ? "SHARP" : "" + " ", flat ? "FLAT" : "",
+        currIndex, numNotes)
+      );
   }
 }
 
@@ -178,7 +181,7 @@ function onChordPlayedCallback(chord, timeMS)
   if(chord != undefined)
   {
     console.log("Chord played: " + chord);
-    numNotes = chord.length;
+    nextNumNotes = chord.length;
     newChordReady = true;
   }
 }
@@ -225,13 +228,15 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
   }
   else
   {
-    var step = (currIndex) / (numNotes + 1);
+    var step = (currIndex) / numNotes;
     hiFreqNormal = Math.pow(Math.abs(Math.cos(normalVec.angleTo(up) + Math.PI * (step))), 8);
   }
+  
+  
+  hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
 
   // hiFreqNormal = THREE.Math.lerp(hiFreqNormal, 0, 
   //   TWEEN.Easing.Quadratic.Out((time - noteTime) / 300));
-  hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
   // console.log(hiFreqNormal);
 
   return hiFreqNormal;
@@ -270,8 +275,8 @@ for(var i = 0; i < vertexMap.length; i++)
 });
 
   var baseAmplitude = 0.05;
-  var baseFreq = 10;
-  var mult = 5;
+  var baseFreq = 5;
+  var mult = 10;
   // var mult = 1;
 
   var amplitude = lerp(baseAmplitude, baseAmplitude * mult, hiFreqNormal);
@@ -280,11 +285,11 @@ for(var i = 0; i < vertexMap.length; i++)
   // var freq = 10 * lerp(0.6, 1.0, vertNoise[i]);
   // setVertexOffset(i, normalVec.multiplyScalar(
   //   amplitude * Math.cos(freq * time)));
-  // setVertexOffset(i, normalVec.multiplyScalar(
-  //   amplitude * Math.sin(freq * vertNoise[i] * time)));
-  var pulse = lerp(0, 0.5, hiFreqNormal) * lerp(0.9, 1.2, vertNoise[n]);
+  setVertexOffset(i, normalVec.multiplyScalar(
+    amplitude * Math.sin(freq * time)));
+  // var pulse = lerp(0, 0.5, hiFreqNormal) * lerp(0.9, 1.2, vertNoise[n]);
 
-  setVertexOffset(i, normalVec.multiplyScalar(pulse));
+  // setVertexOffset(i, normalVec.multiplyScalar(pulse));
   // setVertexOffset(i, new THREE.Vector3(0, 0, 0));
 }
 }
@@ -292,7 +297,7 @@ for(var i = 0; i < vertexMap.length; i++)
 camera.position.z = 5;
 t = 0;
 function animate() {
-  t += 0.01;
+  t += 0.0166;
   makeThisLookCool(t);
 	requestAnimationFrame( animate );
 	renderer.render( scene, camera );
