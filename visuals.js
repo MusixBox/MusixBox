@@ -233,10 +233,12 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
   }
   
   
-  hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
+  // hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
 
-  // hiFreqNormal = THREE.Math.lerp(hiFreqNormal, 0, 
-  //   TWEEN.Easing.Quadratic.Out((time - noteTime) / 300));
+  hiFreqNormal = THREE.Math.clamp(
+    THREE.Math.lerp(hiFreqNormal, 0, 
+    TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
+    0, 1);
   // console.log(hiFreqNormal);
 
   return hiFreqNormal;
