@@ -27,6 +27,7 @@ var numDurations = 4.0;
 
 
 var nextNote = 0;
+
 var Amin = ['A3', 'E4', 'A4', 'B4', 'C5', 'E5'];
 var Emin = ['E3', 'B3', 'E4', 'G4', 'A4', 'B4'];
 var Fmaj = ['F3', 'C4', 'F4', 'G4', 'A4', 'C5'];
