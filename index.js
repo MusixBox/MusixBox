@@ -77,6 +77,8 @@ var nextChordSize = 3;
 var nextBrightNotes = 0;
 var nextDarkNotes = 0;
 
+var initialized = false;
+
 // update simplex noise data (called every frame)
 function updateNoise(delta, timestamp) { 
   moodNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
@@ -89,8 +91,20 @@ function getTimestamp()
   return lastFrameTimeMs;
 }
 
+function init()
+{
+  initialized = true;
+  var nextChordObj = new Chord(nextBase, nextChord);
+  onChordPlayedCallback(nextChordObj, lastFrameTimeMs);
+}
+
 // main update loop
 function mainLoop(timestamp) {
+  if(!initialized)
+  {
+    init();
+  }
+
   if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
     // if we're not at the next frame, just do nothing
     // still request next frame just in case next frame we do something
@@ -144,7 +158,9 @@ function mainLoop(timestamp) {
         nextDarkNotes = 1;
       }
       nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
-      onChordPlayedCallback(nextChord, lastNoteTimeMs);
+
+      var nextChordObj = new Chord(nextBase, nextChord);
+      onChordPlayedCallback(nextChordObj, lastNoteTimeMs);
 
       // wait longer between chords than between notes in a chord
       nextDuration *= 16;

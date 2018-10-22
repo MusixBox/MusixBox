@@ -109,17 +109,6 @@ function setVertexOffset(vertIndex, offset)
     }
 }
 
-var rainbowColorMap =
-{
-  "A" : 0xf17e77,
-  "B" : 0xf0da7b,
-  "C" : 0xb0ef7f,
-  "D" : 0x83eea6,
-  "E" : 0x87e3ec,
-  "F" : 0x8b9aeb,
-  "G" : 0xc58eea
-};
-
 if (!String.format) {
   String.format = function(format) {
     var args = Array.prototype.slice.call(arguments, 1);
@@ -137,11 +126,12 @@ var nextNumNotes = 0;
 var currIndex = 0;
 var noteTime = 0;
 var newChordReady = false;
+var chordObj = undefined;
 var noteColor = undefined;
 
 var baseColor = new THREE.Color(0.6, 0.7, 0.7);
 setBaseColor(baseColor);
-var baseColors = []
+var baseColors = [];
 for(var i = 0; i < colors.count; i++)
 {
   baseColors.push(new THREE.Color(
@@ -167,7 +157,15 @@ function onNotePlayedCallback(note, timeMS)
     var flat = note.search("b") != -1;
     currIndex++;
     noteTime = timeMS;
-    noteColor = new THREE.Color(rainbowColorMap[tone]);
+
+    var colors = colormap[chordObj.name];
+    if(colors == undefined)
+    {
+      colors = colormap['default'];
+    }
+    noteColor = new THREE.Color(
+      colors[currIndex % colors.length]);
+    // noteColor = new THREE.Color(0, 0, 0);
     console.log(
       String.format("Note played: {0} {1} {2}{3} {4} {5}", 
         tone, octave, sharp ? "SHARP" : "" + " ", flat ? "FLAT" : "",
@@ -180,8 +178,12 @@ function onChordPlayedCallback(chord, timeMS)
 {
   if(chord != undefined)
   {
-    console.log("Chord played: " + chord);
-    nextNumNotes = chord.length;
+    console.log(
+      String.format("Chord played: {0}: {1}",
+       chord.name,
+       chord.notes));
+    chordObj = chord;
+    nextNumNotes = chord.notes.length;
     newChordReady = true;
   }
 }
