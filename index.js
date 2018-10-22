@@ -2,11 +2,12 @@
 var synth = new Tone.PolySynth(10, Tone.Synth).toMaster();
 
 for (var i = 0; i < synth.voices.length; i++) {
+  // most of what you hear will be the release tail
   synth.voices[i].envelope.release = 20.0;
+  // the attack goes to 1.0 vol, but the start of the release will be 10% of that
   synth.voices[i].envelope.sustain = 0.1;
+  // clear tone for music box :) 
   synth.voices[i].oscillator._oscillator._type = "sine";
-
-  // console.log(synth.voices[i]);
 }
 
 // create simplex noise
@@ -106,7 +107,8 @@ function mainLoop(timestamp) {
 
   // should we play the next note?
   if (timestamp - lastNoteTimeMs > nextDuration) {
-    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (moodNoise))], "42n");
+    // plays the note; 32n represents '32th note', which is arbitrarily short.
+    // most of what you hear is just the "release" tail anyways.
     synth.triggerAttackRelease(nextChord[nextNote], "32n");
 
     lastNoteTimeMs = timestamp;
