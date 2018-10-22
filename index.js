@@ -32,17 +32,17 @@ var numDurations = 4.0;
 var nextNote = 0;
 
 var moodChords = ['Am', 'Em', 'F', 'G', 'C'];
-var curChord = getSimpleChord('C', 1, 3, 0, 0, false);
-var curBase = 'C';
+var nextChord = getSimpleChord('C', 1, 3, 0, 0, false);
+var nextBase = 'C';
 
 // update perlin noises
 function updatePerlin(delta, timestamp) { 
   // pitchPerlin = (noise.perlin2(timestamp / 10000, 0) + 0.5);
   // durationPerlin = (noise.perlin2(timestamp / 10000, 1000) + 0.5);
   // chordSizePerlin = (noise.perlin2(timestamp / 10000, 2000) + 0.5);
-  pitchPerlin = (simplex.noise3d(timestamp / 5000, 0, 0) + 1.0) / 2.0;
+  pitchPerlin = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
   durationPerlin = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
-  chordSizePerlin = (simplex.noise3d(timestamp / 5000, 2000, 0) + 1.0) / 2.0;
+  chordSizePerlin = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
 }
  
 function mainLoop(timestamp) {
@@ -64,7 +64,7 @@ function mainLoop(timestamp) {
 
 
     // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin))], "42n");
-    synth.triggerAttackRelease(curChord[nextNote], "32n");
+    synth.triggerAttackRelease(nextChord[nextNote], "32n");
 
     lastNoteTimeMs = timestamp;
 
@@ -72,13 +72,13 @@ function mainLoop(timestamp) {
     nextDuration = arpeggioSpeed * (minDurationMultiple * (Math.ceil(durationPerlin * numDurations)));
 
     nextNote += 1;
-    if (nextNote > curChord.length) {
-      console.log(curBase);
-      console.log(curChord);
+    if (nextNote > nextChord.length) {
+      console.log(nextBase);
+      console.log(nextChord);
 
       nextNote = 0;
-      curBase = moodChords[Math.floor(moodChords.length * pitchPerlin)];
-      curChord = getSimpleChord(curBase, 1, Math.ceil(chordSizePerlin * 5.0), 0, 0, false);
+      nextBase = moodChords[Math.floor(moodChords.length * pitchPerlin)];
+      nextChord = getSimpleChord(nextBase, 1, Math.ceil(chordSizePerlin * 5.0), 0, 0, false);
       nextDuration *= 16;
     }
   }
