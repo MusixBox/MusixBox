@@ -3,6 +3,7 @@ var chordData = {
 	"scale": ["C", "D", "E", "F", "G", "A", "B"],
 	"chords": ["C", "Dm", "Em", "F", "G", "Am"],
 	"basicChordNotes": [1, 5, 8, 10, 12, 15],
+	"inversions": [1, 3, 5],
 	"colorNotes": {
 		"bright": [9, 13],
 		"dark": [2, 7],
@@ -47,9 +48,19 @@ function getBasicChord(chord) {
 
 function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSparse) {
 	chordNotes = [chord + chordData.baseOctave];
+
 	if (isSparse) {
-		shuffledBasicNotes = chordData.basicChordNotes;
+		// slice to remove notes below inversion
+		sliceStart = 1;
+		if (inversion > 2) {
+			sliceStart = 2;
+		}
+
+		shuffledBasicNotes = chordData.basicChordNotes.slice(sliceStart, chordData.basicChordNotes.length);
+
 		chordNotes = shuffledBasicNotes.sort(() => 0.5 - Math.random()).slice(0, numBaseNotes);
+
+		chordNotes = chordNotes.concat([chordData.inversions[inversion - 1]]);
 	} else {
 		chordNotes = chordData.basicChordNotes.slice(0, numBaseNotes);
 	}

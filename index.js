@@ -32,8 +32,12 @@ var numDurations = 4.0;
 var nextNote = 0;
 
 var moodChords = ['Am', 'Em', 'F', 'G', 'C'];
-var nextChord = getSimpleChord('C', 1, 3, 0, 0, false);
+
 var nextBase = 'C';
+var nextChord = getSimpleChord(nextBase, 1, 3, 0, 0, false);
+var nextChordSize = 3;
+var nextBrightNotes = 0;
+var nextDarkNotes = 0;
 
 // update simplex noises
 function updateNoise(delta, timestamp) { 
@@ -78,7 +82,15 @@ function mainLoop(timestamp) {
 
       nextNote = 0;
       nextBase = moodChords[Math.floor(moodChords.length * pitchNoise)];
-      nextChord = getSimpleChord(nextBase, 1, Math.ceil(chordSizeNoise * 5.0), 0, 0, false);
+
+      nextChordSize = Math.floor(chordSizeNoise * 5.0);
+      if (nextChordSize > 3) {
+        nextBrightNotes = 1;
+      } 
+      if (nextChordSize > 4) {
+        nextDarkNotes = 1;
+      }
+      nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
       nextDuration *= 16;
     }
   }
