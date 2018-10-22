@@ -15,7 +15,7 @@ var simplex = new SimplexNoise();
 /**
  * noise globals that controls various aspects of sound
  * 
- * pitchNoise
+ * moodNoise
  *  *- controls what chord to play.
  * durationNoise
  *  *- controls how fast the arpeggio is, 
@@ -24,7 +24,7 @@ var simplex = new SimplexNoise();
  *  *- controls how large the chord is
  *   - larger chords also get more color notes
  */ 
-var pitchNoise = 0;
+var moodNoise = 0;
 var durationNoise = 0;
 var chordSizeNoise = 0;
 
@@ -78,7 +78,7 @@ var nextDarkNotes = 0;
 
 // update simplex noise data (called every frame)
 function updateNoise(delta, timestamp) { 
-  pitchNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
+  moodNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
   durationNoise = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
   chordSizeNoise = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
 }
@@ -100,13 +100,13 @@ function mainLoop(timestamp) {
   updateNoise(delta, timestamp);
   
   // change document background color
-  document.body.style.backgroundColor = "rgb(" + pitchNoise * 256.0 + "," + 
-                                                 pitchNoise * 256.0 + "," + 
-                                                 pitchNoise * 256.0 + ")";
+  document.body.style.backgroundColor = "rgb(" + moodNoise * 256.0 + "," + 
+                                                 moodNoise * 256.0 + "," + 
+                                                 moodNoise * 256.0 + ")";
 
   // should we play the next note?
   if (timestamp - lastNoteTimeMs > nextDuration) {
-    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchNoise))], "42n");
+    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (moodNoise))], "42n");
     synth.triggerAttackRelease(nextChord[nextNote], "32n");
 
     lastNoteTimeMs = timestamp;
@@ -124,7 +124,7 @@ function mainLoop(timestamp) {
 
       // figure out what we play next
       nextNote = 0;
-      nextBase = moodChords[Math.floor(moodChords.length * pitchNoise)];
+      nextBase = moodChords[Math.floor(moodChords.length * moodNoise)];
       nextChordSize = Math.floor(chordSizeNoise * 5.0);
 
       // add color notes for large chords
