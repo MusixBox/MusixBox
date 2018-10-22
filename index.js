@@ -15,9 +15,9 @@ var date = new Date();
 noise.seed(date.getTime());
 var simplex = new SimplexNoise();
 
-var pitchPerlin = 0;
-var durationPerlin = 0;
-var chordSizePerlin = 0;
+var pitchNoise = 0;
+var durationNoise = 0;
+var chordSizeNoise = 0;
 
 var lastFrameTimeMs = 0;
 var lastNoteTimeMs = 0;
@@ -35,14 +35,14 @@ var moodChords = ['Am', 'Em', 'F', 'G', 'C'];
 var nextChord = getSimpleChord('C', 1, 3, 0, 0, false);
 var nextBase = 'C';
 
-// update perlin noises
-function updatePerlin(delta, timestamp) { 
-  // pitchPerlin = (noise.perlin2(timestamp / 10000, 0) + 0.5);
-  // durationPerlin = (noise.perlin2(timestamp / 10000, 1000) + 0.5);
-  // chordSizePerlin = (noise.perlin2(timestamp / 10000, 2000) + 0.5);
-  pitchPerlin = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
-  durationPerlin = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
-  chordSizePerlin = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
+// update simplex noises
+function updateNoise(delta, timestamp) { 
+  // pitchNoise = (noise.perlin2(timestamp / 10000, 0) + 0.5);
+  // durationNoise = (noise.perlin2(timestamp / 10000, 1000) + 0.5);
+  // chordSizeNoise = (noise.perlin2(timestamp / 10000, 2000) + 0.5);
+  pitchNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
+  durationNoise = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
+  chordSizeNoise = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
 }
  
 function mainLoop(timestamp) {
@@ -54,22 +54,22 @@ function mainLoop(timestamp) {
   delta = timestamp - lastFrameTimeMs; // get the delta time since last frame
   lastFrameTimeMs = timestamp;
  
-  updatePerlin(delta, timestamp); // pass delta to updatePerlin
+  updateNoise(delta, timestamp); // pass delta to updateNoise
   
-  document.body.style.backgroundColor = "rgb(" + pitchPerlin * 256.0 + "," + 
-                                                 pitchPerlin * 256.0 + "," + 
-                                                 pitchPerlin * 256.0 + ")";
+  document.body.style.backgroundColor = "rgb(" + pitchNoise * 256.0 + "," + 
+                                                 pitchNoise * 256.0 + "," + 
+                                                 pitchNoise * 256.0 + ")";
 
   if (timestamp - lastNoteTimeMs > nextDuration) {
 
 
-    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchPerlin))], "42n");
+    // synth.triggerAttackRelease(Cmaj[Math.floor(Cmaj.length * (pitchNoise))], "42n");
     synth.triggerAttackRelease(nextChord[nextNote], "32n");
 
     lastNoteTimeMs = timestamp;
 
     // ceil, so "min duration" is at least 0.5 * arpeggioSpeed
-    nextDuration = arpeggioSpeed * (minDurationMultiple * (Math.ceil(durationPerlin * numDurations)));
+    nextDuration = arpeggioSpeed * (minDurationMultiple * (Math.ceil(durationNoise * numDurations)));
 
     nextNote += 1;
     if (nextNote > nextChord.length) {
@@ -77,8 +77,8 @@ function mainLoop(timestamp) {
       console.log(nextChord);
 
       nextNote = 0;
-      nextBase = moodChords[Math.floor(moodChords.length * pitchPerlin)];
-      nextChord = getSimpleChord(nextBase, 1, Math.ceil(chordSizePerlin * 5.0), 0, 0, false);
+      nextBase = moodChords[Math.floor(moodChords.length * pitchNoise)];
+      nextChord = getSimpleChord(nextBase, 1, Math.ceil(chordSizeNoise * 5.0), 0, 0, false);
       nextDuration *= 16;
     }
   }
