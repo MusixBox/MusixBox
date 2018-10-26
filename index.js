@@ -1,6 +1,6 @@
 // setup polysynth (plays multiple notes)
 
-StartAudioContext(Tone.context);
+// StartAudioContext(Tone.context);
 
 var synth = new Tone.PolySynth(10, Tone.Synth).toMaster();
 

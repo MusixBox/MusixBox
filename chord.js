@@ -19,6 +19,25 @@
 var chordData = {
 	"baseOctave": 3,
 	"melodyOctave": 5,
+	"semitones": {
+		"C": 0,
+		"C#": 1,
+		"Db": 1,
+		"D": 2,
+		"D#": 3,
+		"Eb": 3,
+		"E": 4,
+		"F": 5,
+		"F#": 6,
+		"Gb": 6,
+		"G": 7,
+		"G#": 8, 
+		"Ab": 8,
+		"A": 9,
+		"A#": 10,
+		"Bb": 10,
+		"B": 11,
+	},
 	"scale": ["C", "D", "E", "F", "G", "A", "B"],
 	"chords": ["C", "Dm", "Em", "F", "G", "Am"],
 	"basicChordNotes": [1, 5, 8, 10, 12, 15],
@@ -89,7 +108,6 @@ function isMinor(note) {
 function getIntervalNote(note, interval) {
 	var relative = getNote(note);
 	var octave = getOctave(note);
-
 	relative += interval - 1;
 	while (relative >= 8) {
 		relative -= 7;
@@ -115,6 +133,30 @@ function getNoteInterval(note1, note2) {
 
 	var relative2 = getNote(note2);
 	var octave2 = getOctave(note2);
+
+	return octave2 * 7 + relative2 - (octave1 * 7 + relative1);
+}
+
+/**
+ * Given two notes, returns the number of semitones in between them 
+ * *** Ignores Octaves
+ * 
+ * note1: (string) the lower note
+ * note2: (string) the higher note
+ * return: (int) number of semitones
+ * 
+ * example: ('D2', 'Gb2') => 4
+ */
+function getSemitoneInterval(note1, note2) {
+	// TOOD: better algo, this one feels kinda dumb
+	var note1semis = chordData.semitones[note1];
+	var note2semis = chordData.semitones[note2];	
+
+	if (note2semis < note1semis) {
+		note2semis += 12;
+	}
+
+	return note2semis - note1semis;
 }
 
 /**
@@ -162,26 +204,54 @@ function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSp
 	brightNotes = chordData.colorNotes.bright;
 	darkNotes = chordData.colorNotes.dark;
 
-	// replace minor low seconds with fourths instead.
-	// replace minor high sixths with fourths instead.
-	if (isMinor(chord)) {
-		for (var i = 0; i < darkNotes.length; i++) {
-			if (darkNotes[i] == 2) {
+	// should be encapsulated within dark / bright notes...
+	// replace tritones with major seconds (F-B to F-G)
+	// replace root minor seconds with major fourths (B-C to B-E) (E-F to E-A)
+	rootNote = chord.match(/[A-Z]+/g)[0];
+	console.log(rootNote + chordData.baseOctave);
+	for (var i = 0; i < darkNotes.length; i++) {
+		darkNote = getIntervalNote(rootNote + chordData.baseOctave, darkNotes[i]).match(/[A-Z#b]+/g)[0];
+		interval = getSemitoneInterval(rootNote, darkNote);
+		switch (interval) {
+			case 1:
 				darkNotes[i] = 4;
-			}
+				break;
+			case 6:
+				darkNotes[i] = 2;
 		}
+	}
+	for (var i = 0; i < brightNotes.length; i++) {
+		brightNote = getIntervalNote(rootNote + chordData.baseOctave, brightNotes[i]).match(/[A-Z#b]+/g)[0];
+		interval = getSemitoneInterval(rootNote, brightNote);
+
+		switch (interval) {
+			case 1:
+				brightNotes[i] = 11;
+				break;
+			case 6:
+				brightNotes[i] = 9;
+		}
+	}
+
+	if (isMinor(chord)) {
+		// for (var i = 0; i < darkNotes.length; i++) {
+		// 	if (darkNotes[i] == 2) {
+		// 		darkNotes[i] = 4;
+		// 	}
+		// }
 		for (var i = 0; i < brightNotes.length; i++) {
 			if (brightNotes[i] == 13) {
 				brightNotes[i] = 11;
 			}
 		}
 	}
+	
 
 	chordNotes = chordNotes.concat(brightNotes.sort(() => 0.5 - Math.random()).slice(0, numBright));
 	chordNotes = chordNotes.concat(darkNotes.sort(() => 0.5 - Math.random()).slice(0, numDark));
 
 	chordNotes = chordNotes.sort((a, b) => a - b);
-	return chordNotes.map(rel => getIntervalNote(chord + chordData.baseOctave, rel));
+	return chordNotes.map(rel => getIntervalNote(rootNote + chordData.baseOctave, rel));
 }
 
 // console.log("Basic         : " + getBasicChord("C"));
