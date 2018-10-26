@@ -1,4 +1,7 @@
 // setup polysynth (plays multiple notes)
+
+StartAudioContext(Tone.context);
+
 var synth = new Tone.PolySynth(10, Tone.Synth).toMaster();
 
 for (var i = 0; i < synth.voices.length; i++) {
