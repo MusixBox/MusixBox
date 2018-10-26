@@ -29,6 +29,13 @@ var chordData = {
 	},
 };
 
+class Chord {
+	constructor(name, notes) {
+		this.name = name;
+		this.notes = notes;
+	}
+};
+
 /**
  * gets the pitch of the note relative to a C, ignoring octave
  * 
