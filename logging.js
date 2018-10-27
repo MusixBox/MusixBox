@@ -1,8 +1,8 @@
 // Allows debugging to be disabled in each file
 tags = {
     'DEFAULT' : true,
-    'graphics': false,
-    'music': true
+    'graphics': true,
+    'music': false
 }
 var currentLogTag = ''
 
