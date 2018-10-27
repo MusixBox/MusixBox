@@ -21,5 +21,10 @@ var date = new Date();
 var start_time = date.getTime();
 
 
-var past_notes = [];
-var future_notes = [];
+var past_notes_bass = [];
+var past_notes_melody = [];
+var past_chords = [];
+
+var future_notes_bass = [];
+var future_notes_melody = [];
+var future_chords = [];

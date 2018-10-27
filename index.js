@@ -89,10 +89,10 @@ var nextDarkNotes = 0;
 var initialized = false;
 
 // update simplex noise data (called every frame)
-function updateNoise(timestamp) { 
-  moodNoise = (simplex.noise3d(timestamp / 2, 0, 0) + 1.0) / 2.0;
-  durationNoise = (simplex.noise3d(timestamp / 5, 1000, 0) + 1.0) / 2.0;
-  chordSizeNoise = (simplex.noise3d(timestamp / 3, 1000.5, 0) + 1.0) / 2.0;
+function updateNoise(tick) { 
+  moodNoise = (simplex.noise3d(tick / 2, 0, 0) + 1.0) / 2.0;
+  durationNoise = (simplex.noise3d(tick / 5, 1000, 0) + 1.0) / 2.0;
+  chordSizeNoise = (simplex.noise3d(tick / 3, 2000, 0) + 1.0) / 2.0;
 }
 
 function getTimestamp() {
@@ -105,8 +105,8 @@ function init() {
   onChordPlayedCallback(nextChordObj, lastFrameTimeMs);
 }
 
-async function populateNextMeasureBass(timestamp) {
-  updateNoise(timestamp);
+async function populateNextMeasureBass(tick) {
+  updateNoise(tick);
 
   nextNote = 0;
   nextBase = moodChords[Math.floor(moodChords.length * moodNoise)];
@@ -129,7 +129,26 @@ async function populateNextMeasureBass(timestamp) {
   }
 
   for (var i = 0; i < 4 && i < nextChordSize; i++) {
-    future_notes.push([cur_tick + 1.0 + i * dist, nextChord[i]]);
+    future_notes_bass.push([Math.floor(cur_tick) + 1.0 + i * dist, nextChord[i]]);
+  }
+}
+
+async function populateNextMeasureMelody(tick) {
+  updateNoise(tick);
+
+  numNotes = Math.floor(durationNoise * 3.0) + 2;
+
+  var dist = 0.25;
+  if (nextChordSize <= 2) {
+    var dist = 0.5;
+  }
+
+  for (var i = 0; i < 4 && i < numNotes; i++) {
+    var note_tick = Math.floor(cur_tick) + 1.0 + i * dist;
+    updateNoise(note_tick);
+
+    note = getIntervalNote(nextBase + (chordData.baseOctave + 1), Math.floor(chordSizeNoise * 9.0));
+    future_notes_melody.push([note_tick, note]);
   }
 }
 
@@ -162,16 +181,30 @@ function mainLoop(timestamp) {
 
   // if we have less than a measure left to play,
   // generate the measure after that.
-  if (future_notes.length == 0 || Math.ceil(future_notes[future_notes.length - 1][0]) - cur_tick < 1.0) {
+  if (future_notes_bass.length == 0 || Math.ceil(future_notes_bass[future_notes_bass.length - 1][0]) - cur_tick < 1.0) {
     populateNextMeasureBass(Math.floor(cur_tick) + 1.0);
+  }
+  if (future_notes_melody.length == 0 || Math.ceil(future_notes_melody[future_notes_melody.length - 1][0]) - cur_tick < 1.0) {
+    populateNextMeasureMelody(Math.floor(cur_tick) + 1.0);
   }
 
   // play notes
-  while (future_notes.length > 0 && future_notes[0][0] <= cur_tick) {
-    var note = future_notes.shift();
-    past_notes.push(note);
+  while (future_notes_bass.length > 0 && future_notes_bass[0][0] <= cur_tick) {
+    var note = future_notes_bass.shift();
+    past_notes_bass.push(note);
     synth.triggerAttackRelease(note[1], "32n");
   }
+
+  while (future_notes_melody.length > 0 && future_notes_melody[0][0] <= cur_tick) {
+    var note = future_notes_melody.shift();
+    past_notes_melody.push(note);
+    synth.triggerAttackRelease(note[1], "32n");
+  }
+
+  // while (future_chords.length > 0 && future_chords[0][0] <= cur_tick) {
+  //   var chord = future_chords.shift();
+  //   past_chords.push(chord);
+  // }
 
   prev_tick = cur_tick;
 
