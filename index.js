@@ -105,13 +105,13 @@ function init() {
   onChordPlayedCallback(nextChordObj, lastFrameTimeMs);
 }
 
-async function populateNextMeasureBass(tick) {
+async function populateNextMeasureChord(tick) {
   updateNoise(tick);
 
   nextNote = 0;
   nextBase = moodChords[Math.floor(moodChords.length * moodNoise)];
   nextChordSize = Math.floor(chordSizeNoise * 3.0) + 2; // at least two notes
-
+ 
   // add color notes for large chords
   if (nextChordSize > 3) {
     nextBrightNotes = 1;
@@ -119,9 +119,14 @@ async function populateNextMeasureBass(tick) {
   if (nextChordSize > 4) {
     nextDarkNotes = 1;
   }
-  nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
+  // max 4 notes
+  nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true).slice(0,5);
 
-  console.log(chordSizeNoise);  
+  future_chords.push(new Chord(nextBase, nextChord));
+}
+
+async function populateNextMeasureBass(tick) {
+  updateNoise(tick);
 
   var dist = 0.25;
   if (nextChordSize <= 2) {
@@ -182,29 +187,34 @@ function mainLoop(timestamp) {
   // if we have less than a measure left to play,
   // generate the measure after that.
   if (future_notes_bass.length == 0 || Math.ceil(future_notes_bass[future_notes_bass.length - 1][0]) - cur_tick < 1.0) {
+    populateNextMeasureChord(Math.floor(cur_tick) + 1.0);
     populateNextMeasureBass(Math.floor(cur_tick) + 1.0);
   }
+
   if (future_notes_melody.length == 0 || Math.ceil(future_notes_melody[future_notes_melody.length - 1][0]) - cur_tick < 1.0) {
     populateNextMeasureMelody(Math.floor(cur_tick) + 1.0);
   }
 
-  // play notes
+
   while (future_notes_bass.length > 0 && future_notes_bass[0][0] <= cur_tick) {
     var note = future_notes_bass.shift();
+    console.log(note);
     past_notes_bass.push(note);
     synth.triggerAttackRelease(note[1], "32n");
+
+    var chord = future_chords.shift();
+    console.log(chord);
+    past_chords.push(chord);
   }
 
   while (future_notes_melody.length > 0 && future_notes_melody[0][0] <= cur_tick) {
     var note = future_notes_melody.shift();
+    console.log(note);
     past_notes_melody.push(note);
     synth.triggerAttackRelease(note[1], "32n");
   }
 
-  // while (future_chords.length > 0 && future_chords[0][0] <= cur_tick) {
-  //   var chord = future_chords.shift();
-  //   past_chords.push(chord);
-  // }
+
 
   prev_tick = cur_tick;
 
