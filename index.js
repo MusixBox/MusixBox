@@ -4,13 +4,17 @@
 
 var synth = new Tone.PolySynth(10, Tone.Synth).toMaster();
 
+
 for (var i = 0; i < synth.voices.length; i++) {
   // most of what you hear will be the release tail
   synth.voices[i].envelope.release = 20.0;
   // the attack goes to 1.0 vol, but the start of the release will be 10% of that
-  synth.voices[i].envelope.sustain = 0.1;
+  synth.voices[i].envelope.sustain = 0.2;
   // clear tone for music box :) 
   synth.voices[i].oscillator._oscillator._type = "sine";
+  synth.voices[i].volume.input.value = 0.25;
+
+  // console.log(synth.voices[i]);
 }
 
 // create simplex noise
@@ -144,7 +148,7 @@ function mainLoop(timestamp) {
 
     // when our next note is past our chord length
     // (i.e. as we're playing the last note in the chord)
-    if (nextNote > nextChord.length) {
+    if (nextNote >= nextChord.length) {
       console.log(nextBase);
       console.log(nextChord);
 
