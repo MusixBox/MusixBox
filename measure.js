@@ -1,3 +1,4 @@
+setLogTag('music');
 /**
  * measure.js is our internal system of keeping track of what notes we've launched to play.
  * 

@@ -1,3 +1,4 @@
+setLogTag('music');
 /**
  * chordData holds most of the basic chord-generating data
  * 
