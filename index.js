@@ -87,32 +87,58 @@ var nextDarkNotes = 0;
 var initialized = false;
 
 // update simplex noise data (called every frame)
-function updateNoise(delta, timestamp) { 
-  moodNoise = (simplex.noise3d(timestamp / 2000, 0, 0) + 1.0) / 2.0;
-  durationNoise = (simplex.noise3d(timestamp / 5000, 1000, 0) + 1.0) / 2.0;
-  chordSizeNoise = (simplex.noise3d(timestamp / 3000, 1000.5, 0) + 1.0) / 2.0;
+function updateNoise(timestamp) { 
+  moodNoise = (simplex.noise3d(timestamp / 2, 0, 0) + 1.0) / 2.0;
+  durationNoise = (simplex.noise3d(timestamp / 5, 1000, 0) + 1.0) / 2.0;
+  chordSizeNoise = (simplex.noise3d(timestamp / 3, 1000.5, 0) + 1.0) / 2.0;
 }
 
-function getTimestamp()
-{
+function getTimestamp() {
   return lastFrameTimeMs;
 }
 
-function init()
-{
+function init() {
   initialized = true;
   var nextChordObj = new Chord(nextBase, nextChord);
   onChordPlayedCallback(nextChordObj, lastFrameTimeMs);
 }
 
+async function populateNextMeasureBass(timestamp) {
+  updateNoise(timestamp);
+
+  nextNote = 0;
+  nextBase = moodChords[Math.floor(moodChords.length * moodNoise)];
+  nextChordSize = Math.floor(chordSizeNoise * 3.0) + 2; // at least two notes
+
+  // add color notes for large chords
+  if (nextChordSize > 3) {
+    nextBrightNotes = 1;
+  } 
+  if (nextChordSize > 4) {
+    nextDarkNotes = 1;
+  }
+  nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
+
+  console.log(chordSizeNoise);  
+
+  var dist = 0.25;
+  if (nextChordSize <= 2) {
+    var dist = 0.5;
+  }
+
+  for (var i = 0; i < 4 && i < nextChordSize; i++) {
+    future_notes.push([cur_tick + 1.0 + i * dist, nextChord[i]]);
+  }
+}
+
 // main update loop
 function mainLoop(timestamp) {
-  if(!initialized)
-  {
+  if (!initialized) {
     init();
   }
 
   if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
+
     // if we're not at the next frame, just do nothing
     // still request next frame just in case next frame we do something
     requestAnimationFrame(mainLoop);
@@ -120,60 +146,35 @@ function mainLoop(timestamp) {
   }
 
   // update frame timing issues, set delta
-  lastFrameTimeMs = timestamp;
   delta = timestamp - lastFrameTimeMs;
   lastFrameTimeMs = timestamp;
+
+  cur_tick += 0.25 * (delta / 1000.0) * (bpm / 60.0);
+
  
-  updateNoise(delta, timestamp);
   
   // change document background color
   document.body.style.backgroundColor = "rgb(" + moodNoise * 256.0 + "," + 
                                                  moodNoise * 256.0 + "," + 
                                                  moodNoise * 256.0 + ")";
 
-  // should we play the next note?
-  if (timestamp - lastNoteTimeMs > nextDuration) {
-    // plays the note; 32n represents '32th note', which is arbitrarily short.
-    // most of what you hear is just the "release" tail anyways.
-    synth.triggerAttackRelease(nextChord[nextNote], "32n");
-    var curNote = nextChord[nextNote];
-    onNotePlayedCallback(curNote, lastNoteTimeMs);
-
-    lastNoteTimeMs = timestamp;
-
-    // ceil, so "min duration" is at least 0.5 * arpeggioSpeed
-    nextDuration = arpeggioSpeed * (minDurationMultiple * (Math.ceil(durationNoise * numDurations)));
-
-    nextNote += 1;
-
-    // when our next note is past our chord length
-    // (i.e. as we're playing the last note in the chord)
-    if (nextNote >= nextChord.length) {
-      console.log(nextBase);
-      console.log(nextChord);
-
-      // figure out what we play next
-      nextNote = 0;
-      nextBase = moodChords[Math.floor(moodChords.length * moodNoise)];
-      nextChordSize = Math.floor(chordSizeNoise * 5.0);
-
-      // add color notes for large chords
-      if (nextChordSize > 3) {
-        nextBrightNotes = 1;
-      } 
-      if (nextChordSize > 4) {
-        nextDarkNotes = 1;
-      }
-      nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true);
-
-      var nextChordObj = new Chord(nextBase, nextChord);
-      onChordPlayedCallback(nextChordObj, lastNoteTimeMs);
-
-      // wait longer between chords than between notes in a chord
-      nextDuration *= 16;
-    }
+  // if we have less than a measure left to play,
+  // generate the measure after that.
+  if (future_notes.length == 0 || Math.ceil(future_notes[future_notes.length - 1][0]) - cur_tick < 1.0) {
+    populateNextMeasureBass(Math.floor(cur_tick) + 1.0);
   }
 
+  // play notes
+  while (future_notes.length > 0 && future_notes[0][0] <= cur_tick) {
+    var note = future_notes.shift();
+    past_notes.push(note);
+    synth.triggerAttackRelease(note[1], "32n");
+  }
+
+  prev_tick = cur_tick;
+
+  prev_measure = cur_measure;
+  prev_beat = cur_beat;
   requestAnimationFrame(mainLoop);
 }
 
