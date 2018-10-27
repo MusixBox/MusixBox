@@ -1,3 +1,5 @@
+setLogTag('music');
+
 // setup polysynth (plays multiple notes)
 
 // StartAudioContext(Tone.context);
