@@ -195,21 +195,22 @@ function mainLoop(timestamp) {
     populateNextMeasureMelody(Math.floor(cur_tick) + 1.0);
   }
 
+  while (future_chords.length > 0 && future_chords[0][0] <= cur_tick) {
+    var chord = future_chords.shift();
+    console.log("chord: " + chord);
+    past_chords.push(chord);
+  }
 
   while (future_notes_bass.length > 0 && future_notes_bass[0][0] <= cur_tick) {
     var note = future_notes_bass.shift();
-    console.log(note);
+    console.log("bass: " + note);
     past_notes_bass.push(note);
     synth.triggerAttackRelease(note[1], "32n");
-
-    var chord = future_chords.shift();
-    console.log(chord);
-    past_chords.push(chord);
   }
 
   while (future_notes_melody.length > 0 && future_notes_melody[0][0] <= cur_tick) {
     var note = future_notes_melody.shift();
-    console.log(note);
+    console.log("melody: " + note);
     past_notes_melody.push(note);
     synth.triggerAttackRelease(note[1], "32n");
   }
