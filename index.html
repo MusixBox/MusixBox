@@ -18,6 +18,24 @@
 <script src="simplex.js"></script>
 
 <!-- Custom scripts -->
+<script id="vertexShader" type="x-shader/x-vertex">
+  varying vec2 vUv;
+  void main() {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+  }
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+  uniform vec3 color1;
+  uniform vec3 color2;
+  varying vec2 vUv;
+
+  void main() {
+    // gl_FragColor = vec4(gl_FragCoord.x / 1000.0, gl_FragCoord.y / 1000.0, 0.0, 1.0);
+    gl_FragColor = vec4(color1 / 2.0, 1.0);
+  }
+</script>
+
 <script src="logging.js"></script>
 <script src="measure.js"></script>
 <script src="chord.js"></script>
