@@ -122,7 +122,7 @@ async function populateNextMeasureChord(tick) {
   // max 4 notes
   nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true).slice(0,5);
 
-  future_chords.push(new Chord(nextBase, nextChord));
+  future_chords.push([Math.floor(cur_tick) + 1.0, new Chord(nextBase, nextChord)]);
 }
 
 async function populateNextMeasureBass(tick) {
@@ -177,8 +177,7 @@ function mainLoop(timestamp) {
 
   cur_tick += 0.25 * (delta / 1000.0) * (bpm / 60.0);
 
- 
-  
+
   // change document background color
   document.body.style.backgroundColor = "rgb(" + moodNoise * 256.0 + "," + 
                                                  moodNoise * 256.0 + "," + 
@@ -194,6 +193,7 @@ function mainLoop(timestamp) {
   if (future_notes_melody.length == 0 || Math.ceil(future_notes_melody[future_notes_melody.length - 1][0]) - cur_tick < 1.0) {
     populateNextMeasureMelody(Math.floor(cur_tick) + 1.0);
   }
+
 
   while (future_chords.length > 0 && future_chords[0][0] <= cur_tick) {
     var chord = future_chords.shift();

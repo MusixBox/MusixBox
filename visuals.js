@@ -340,12 +340,9 @@ function animate() {
   cube.geometry.attributes.position.needsUpdate = true;
   cube.geometry.attributes.color.needsUpdate = true;
 
-  background.material.uniforms.color1.value = new THREE.Color(parseInt(colormap[nextBase][0].slice(1, 10), 16));
-
-
-  console.log(background.material.uniforms.color1.value);
-
-
+  if (past_chords.length > 0) {
+    background.material.uniforms.color1.value = new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
+  }
 
 }
 animate();
