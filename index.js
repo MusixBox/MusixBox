@@ -214,7 +214,7 @@ function mainLoop(timestamp) {
     debugMusic("melody: " + note);
     past_notes_melody.push(note);
     synth.triggerAttackRelease(note[1], "32n");
-    // onNotePlayedCallback(note[1], getTimestamp());
+    onMelodyPlayedCallback(note[1], getTimestamp());
   }
 
 
