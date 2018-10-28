@@ -1,5 +1,3 @@
-setLogTag('graphics');
-
 // Create basic scene
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -110,10 +108,10 @@ if (!String.format) {
   };
 }
 
-var numNotes = 0;
-var nextNumNotes = 0;
-var currIndex = 0;
-var noteTime = 0;
+var numNotes = -1;
+var nextNumNotes = -1;
+var currIndex = -1;
+var noteTime = -1;
 var newChordReady = false;
 var chordObj = undefined;
 var noteColor = undefined;
@@ -128,6 +126,11 @@ for(var i = 0; i < colors.count; i++)
     colors.getY(i),
     colors.getZ(i)
   ));
+}
+
+function onMelodyPlayedCallback(note, timeMS)
+{
+
 }
 
 function onNotePlayedCallback(note, timeMS)
@@ -155,7 +158,7 @@ function onNotePlayedCallback(note, timeMS)
     noteColor = new THREE.Color(
       colors[currIndex % colors.length]);
     // noteColor = new THREE.Color(0, 0, 0);
-    console.log(
+    debugGraphics(
       String.format("Note played: {0} {1} {2}{3} {4} {5}", 
         tone, octave, sharp ? "SHARP" : "" + " ", flat ? "FLAT" : "",
         currIndex, numNotes)
@@ -165,9 +168,10 @@ function onNotePlayedCallback(note, timeMS)
 
 function onChordPlayedCallback(chord, timeMS)
 {
-  if(chord != undefined)
+  if(chord != undefined 
+    && (currIndex < 0 || currIndex >= chord.notes.length - 1))
   {
-    console.log(
+    debugGraphics(
       String.format("Chord played: {0}: {1}",
        chord.name,
        chord.notes));
@@ -230,7 +234,7 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
     THREE.Math.lerp(hiFreqNormal, 0, 
     TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
     0, 1);
-  // console.log(hiFreqNormal);
+  // debugGraphics(hiFreqNormal);
 
   return hiFreqNormal;
 }
@@ -274,7 +278,7 @@ for(var i = 0; i < vertexMap.length; i++)
 
   var amplitude = lerp(baseAmplitude, baseAmplitude * mult, hiFreqNormal);
   var freq = lerp(baseFreq, baseFreq * mult, hiFreqNormal) * lerp(0.9, 1.2, vertNoise[n]);
-  // console.log(amplitude + " " + freq);
+  // debugGraphics(amplitude + " " + freq);
   // var freq = 10 * lerp(0.6, 1.0, vertNoise[i]);
   // setVertexOffset(i, normalVec.multiplyScalar(
   //   amplitude * Math.cos(freq * time)));

@@ -1,5 +1,3 @@
-setLogTag('music');
-
 // setup polysynth (plays multiple notes)
 
 // StartAudioContext(Tone.context);
@@ -16,7 +14,7 @@ for (var i = 0; i < synth.voices.length; i++) {
   synth.voices[i].oscillator._oscillator._type = "sine";
   synth.voices[i].volume.input.value = 0.25;
 
-  // console.log(synth.voices[i]);
+  // debugMusic(synth.voices[i]);
 }
 
 // create simplex noise
@@ -101,8 +99,6 @@ function getTimestamp() {
 
 function init() {
   initialized = true;
-  var nextChordObj = new Chord(nextBase, nextChord);
-  onChordPlayedCallback(nextChordObj, lastFrameTimeMs);
 }
 
 async function populateNextMeasureChord(tick) {
@@ -198,20 +194,24 @@ function mainLoop(timestamp) {
 
   while (future_notes_bass.length > 0 && future_notes_bass[0][0] <= cur_tick) {
     var note = future_notes_bass.shift();
-    console.log(note);
+    debugMusic(note);
     past_notes_bass.push(note);
     synth.triggerAttackRelease(note[1], "32n");
 
     var chord = future_chords.shift();
-    console.log(chord);
+    debugMusic(chord);
     past_chords.push(chord);
+
+    onChordPlayedCallback(chord, lastFrameTimeMs);
+    onNotePlayedCallback(note[1], lastNoteTimeMs);
   }
 
   while (future_notes_melody.length > 0 && future_notes_melody[0][0] <= cur_tick) {
     var note = future_notes_melody.shift();
-    console.log(note);
+    debugMusic(note);
     past_notes_melody.push(note);
     synth.triggerAttackRelease(note[1], "32n");
+    // onNotePlayedCallback(note[1], lastNoteTimeMs);
   }
 
 

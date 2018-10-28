@@ -1,26 +1,19 @@
 // Allows debugging to be disabled in each file
 tags = {
-    'DEFAULT' : true,
-    'graphics': true,
-    'music': false
+    'graphics': false,
+    'music': true
 }
-var currentLogTag = ''
 
-function setLogTag(tag)
+var debugGraphics = createDebugger('graphics');
+var debugMusic = createDebugger('music');
+
+function createDebugger(tag)
 {
-    if(tag in tags)
+    var debug = function (str) {};
+    if(!tag in tags || tags[tag] == true)
     {
-        currentLogTag = tag;
+        debug = console.log.bind(window.console);
     }
-    else
-    {
-        currentLogTag = 'DEFAULT';
-    }
-}
 
-default_console_log = console.log;
-console.log = function() {
-    if (!(currentLogTag in tags) || tags[currentLogTag] == true) {
-        default_console_log.apply(this, arguments);
-    }
+    return debug;
 }

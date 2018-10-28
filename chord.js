@@ -1,4 +1,3 @@
-setLogTag('music');
 /**
  * chordData holds most of the basic chord-generating data
  * 
@@ -209,7 +208,7 @@ function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSp
 	// replace tritones with major seconds (F-B to F-G)
 	// replace root minor seconds with major fourths (B-C to B-E) (E-F to E-A)
 	rootNote = chord.match(/[A-Z]+/g)[0];
-	console.log(rootNote + chordData.baseOctave);
+	debugMusic(rootNote + chordData.baseOctave);
 	for (var i = 0; i < darkNotes.length; i++) {
 		darkNote = getIntervalNote(rootNote + chordData.baseOctave, darkNotes[i]).match(/[A-Z#b]+/g)[0];
 		interval = getSemitoneInterval(rootNote, darkNote);
@@ -255,10 +254,10 @@ function getSimpleChord(chord, inversion, numBaseNotes, numBright, numDark, isSp
 	return chordNotes.map(rel => getIntervalNote(rootNote + chordData.baseOctave, rel));
 }
 
-// console.log("Basic         : " + getBasicChord("C"));
-// console.log("Simple, dense : " + getSimpleChord("C", 1, 4, 0, 0, false));
-// console.log("Simple, sparse: " + getSimpleChord("C", 1, 4, 0, 0, true));
-// console.log("Simple, color : " + getSimpleChord("C", 1, 2, 2, 1, false));
+// debugMusic("Basic         : " + getBasicChord("C"));
+// debugMusic("Simple, dense : " + getSimpleChord("C", 1, 4, 0, 0, false));
+// debugMusic("Simple, sparse: " + getSimpleChord("C", 1, 4, 0, 0, true));
+// debugMusic("Simple, color : " + getSimpleChord("C", 1, 2, 2, 1, false));
 
 
 
