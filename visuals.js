@@ -49,11 +49,51 @@ for(var i = 0; i < indices.array.length; i++)
 geometry.addAttribute ( 'indices', indices );
 
 
-// Create default material - unshaded
+// // Create default material - unshaded
 var material = new THREE.MeshBasicMaterial( 0x00ff00 );
 material.vertexColors = THREE.FaceColors;
 var cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
+
+
+// background object for shader
+var uniforms = {
+  "color1" : {
+    type : "c",
+    value : new THREE.Color(parseInt(colormap[nextBase][0].slice(1, 10), 16)),
+  },
+};
+// yourMesh.material.uniforms.yourUniform.value = whatever;
+
+console.log(colormap[past_chords[past_chords.length - 1]]);
+
+var fShader = document.getElementById('fragmentShader').text;
+var vShader = document.getElementById('vertexShader').text;
+
+var material = new THREE.ShaderMaterial({
+  uniforms: uniforms,
+  vertexShader: vShader,
+  fragmentShader: fShader
+});
+
+
+var geometry = new THREE.Geometry();
+
+geometry.vertices.push(
+  new THREE.Vector3( -10,  10, -5 ),
+  new THREE.Vector3( -10, -10, -5 ),
+  new THREE.Vector3(  10, -10, -5 ),
+  new THREE.Vector3(  10,  10, -5 )
+);
+
+geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+geometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
+
+
+var background = new THREE.Mesh(geometry, material);
+scene.add(background);
+
+
 
 // Create noise map to create variations in each vertex
 var simplex = new SimplexNoise();
@@ -302,5 +342,10 @@ function animate() {
   cube.rotation.y += 0.01;
   cube.geometry.attributes.position.needsUpdate = true;
   cube.geometry.attributes.color.needsUpdate = true;
+
+  if (past_chords.length > 0) {
+    background.material.uniforms.color1.value = new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
+  }
+
 }
 animate();
