@@ -177,6 +177,9 @@ function mainLoop(timestamp) {
 
   cur_tick += 0.25 * (delta / 1000.0) * (bpm / 60.0);
 
+  cur_measure = Math.floor(cur_tick);
+  cur_beat = cur_tick - cur_measure;
+
 
   // change document background color
   document.body.style.backgroundColor = "rgb(" + moodNoise * 256.0 + "," + 
