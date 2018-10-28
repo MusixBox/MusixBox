@@ -107,9 +107,14 @@ for(var i = 0 ; i < melodyGeo.colors.count; i++)
 var melodyMat = new THREE.MeshBasicMaterial({ color: melodyBaseColor, });
 var melodyObj = new THREE.Mesh(melodyGeo, melodyMat);
 
-scene.add(melodyObj);
-melodyObj.rotation.z = -Math.PI / 2.0;
+var melodyPath = new THREE.CatmullRomCurve3( [
+  new THREE.Vector3 (0, -2, 0),
+  new THREE.Vector3 (2, 0, 0),
+  new THREE.Vector3 (0, 2, 0),
+  new THREE.Vector3 (-2, 0, 0),
+], true, 'catmullrom', 0.8);
 
+scene.add(melodyObj);
 
 
 // Create noise map to create variations in each vertex
@@ -366,10 +371,17 @@ function animate() {
   melodyObj.position = new THREE.Vector3(
     1, 1, 1
   );
-  melodyObj.rotation.z -= dt;
-  var radius = 2.0;
-  melodyObj.position.y = radius * -Math.cos(t);
-  melodyObj.position.x = radius * -Math.sin(t);
+  var minRadius = 1.5;
+  var maxRadius = 2.0;
+  var radius = lerp(minRadius, maxRadius, (Math.sin(t) + 1) / 2.0);
+  // melodyObj.position.y = radius * -Math.cos(t);
+  // melodyObj.position.x = radius * -Math.sin(t);
+  var melodyT = 0.2 * t - Math.floor(0.2 * t);
+  var melodyPoint = melodyPath.getPoint(melodyT);
+  melodyObj.position.x = melodyPoint.x;
+  melodyObj.position.y = melodyPoint.y;
+  melodyObj.position.z = melodyPoint.z;
+  melodyObj.rotation.z = (Math.PI / 2.0) + melodyT * Math.PI * 2.0;
   // melodyObj.rotation.x += 0.01;
   noteTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
   bkndTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 500);
