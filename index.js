@@ -116,7 +116,7 @@ async function populateNextMeasureChord(tick) {
     nextDarkNotes = 1;
   }
   // max 4 notes
-  nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true).slice(0,5);
+  nextChord = getSimpleChord(nextBase, 1, nextChordSize, nextBrightNotes, nextDarkNotes, true).slice(0,nextChordSize);
 
   future_chords.push([Math.floor(cur_tick) + 1.0, new Chord(nextBase, nextChord)]);
 }
@@ -198,7 +198,7 @@ function mainLoop(timestamp) {
     var chord = future_chords.shift();
     debugMusic("chord: " + chord);
     past_chords.push(chord);
-    onChordPlayedCallback(chord, lastFrameTimeMs);
+    onChordPlayedCallback(chord[1], getTimestamp());
   }
 
   while (future_notes_bass.length > 0 && future_notes_bass[0][0] <= cur_tick) {
@@ -206,7 +206,7 @@ function mainLoop(timestamp) {
     debugMusic("bass: " + note);
     past_notes_bass.push(note);
     synth.triggerAttackRelease(note[1], "32n");
-    onNotePlayedCallback(note[1], lastNoteTimeMs);
+    onNotePlayedCallback(note[1], getTimestamp());
   }
 
   while (future_notes_melody.length > 0 && future_notes_melody[0][0] <= cur_tick) {
@@ -214,7 +214,7 @@ function mainLoop(timestamp) {
     debugMusic("melody: " + note);
     past_notes_melody.push(note);
     synth.triggerAttackRelease(note[1], "32n");
-    // onNotePlayedCallback(note[1], lastNoteTimeMs);
+    // onNotePlayedCallback(note[1], getTimestamp());
   }
 
 

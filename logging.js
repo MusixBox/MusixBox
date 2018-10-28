@@ -1,7 +1,7 @@
 // Allows debugging to be disabled in each file
 tags = {
-    'graphics': false,
-    'music': true
+    'graphics': true,
+    'music': false
 }
 
 var debugGraphics = createDebugger('graphics');

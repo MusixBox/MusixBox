@@ -155,6 +155,7 @@ var noteTime = -1;
 var newChordReady = false;
 var chordObj = undefined;
 var noteColor = undefined;
+var bkndColor = new THREE.Color('#000000');
 
 var bc = new THREE.Color(baseColor);
 setBaseColor(bc, baseColorNoise);
@@ -199,17 +200,16 @@ function onNotePlayedCallback(note, timeMS)
       colors[currIndex % colors.length]);
     // noteColor = new THREE.Color(0, 0, 0);
     debugGraphics(
-      String.format("Note played: {0} {1} {2}{3} {4} {5}", 
-        tone, octave, sharp ? "SHARP" : "" + " ", flat ? "FLAT" : "",
-        currIndex, numNotes)
+      String.format("Note played: {0} {1} {2}{3} ({4} of {5})", 
+        tone, octave, sharp ? "SHARP" : "", flat ? "FLAT" : "",
+        currIndex + 1, numNotes)
       );
   }
 }
 
 function onChordPlayedCallback(chord, timeMS)
 {
-  if(chord != undefined 
-    && (currIndex < 0 || currIndex >= chord.notes.length - 1))
+  if(chord != undefined)
   {
     debugGraphics(
       String.format("Chord played: {0}: {1}",
@@ -257,18 +257,20 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
   var hiFreqNormal;
   var up = new THREE.Vector3(0, 1, 0);
 
-  if(numNotes <= 0 || currIndex <= 0)
+  if(numNotes <= 0 || currIndex < 0)
   {
     hiFreqNormal = 0;
   }
   else
   {
     var step = (currIndex) / numNotes;
-    hiFreqNormal = Math.pow(Math.abs(Math.cos(normalVec.angleTo(up) + Math.PI * (step))), 8);
+    hiFreqNormal = Math.pow(Math.abs(Math.cos(Math.PI/8.0 + normalVec.angleTo(up) + Math.PI * (step))), 8);
   }
   
   
   // hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
+
+  // console.log(time - noteTime);
 
   hiFreqNormal = THREE.Math.clamp(
     THREE.Math.lerp(hiFreqNormal, 0, 
@@ -305,9 +307,6 @@ for(var i = 0; i < vertexMap.length; i++)
     var hiFreqNormal = notePulse(normal, currIndex, numNotes, noteTime, getTimestamp());
     var base = new THREE.Color(baseColors[index]);
     var newColor = noteColor == undefined ? base : base.lerp(noteColor, hiFreqNormal);
-    // var b = new THREE.Color(0,0,0);
-    // var w = new THREE.Color(1,1,1);
-    // var newColor = b.lerp(w, hiFreqNormal);
     return newColor;
 }, baseColorNoise);
 
@@ -344,7 +343,15 @@ function animate() {
   cube.geometry.attributes.color.needsUpdate = true;
 
   if (past_chords.length > 0) {
-    background.material.uniforms.color1.value = new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
+    var prevChordColor = new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
+    bkndColor = prevChordColor.lerp(new THREE.Color('#000000'), 0.7);
+    background.material.uniforms.color1.value = bkndColor;
+
+  //   TWEEN.Tween.
+  // hiFreqNormal = THREE.Math.clamp(
+  //   THREE.Math.lerp(hiFreqNormal, 0, 
+  //   TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
+  //   0, 1);
   }
 
 }
