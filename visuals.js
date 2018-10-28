@@ -55,12 +55,12 @@ material.vertexColors = THREE.FaceColors;
 var cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
 
-
 // background object for shader
 var uniforms = {
   "color1" : {
     type : "c",
-    value : new THREE.Color(parseInt(colormap[nextBase][0].slice(1, 10), 16)),
+    // value : new THREE.Color(parseInt(colormap[nextBase][0].slice(1, 10), 16)),
+    value : new THREE.Color('#000000'),
   },
 };
 // yourMesh.material.uniforms.yourUniform.value = whatever;
@@ -152,9 +152,12 @@ var numNotes = -1;
 var nextNumNotes = -1;
 var currIndex = -1;
 var noteTime = -1;
+var noteTween = 0;
+var bkndTween = 0;
 var newChordReady = false;
 var chordObj = undefined;
-var noteColor = undefined;
+var noteColor = new THREE.Color('#000000');
+var prevNoteColor = new THREE.Color('#000000');
 var bkndColor = new THREE.Color('#000000');
 
 var bc = new THREE.Color(baseColor);
@@ -196,6 +199,7 @@ function onNotePlayedCallback(note, timeMS)
     {
       colors = colormap['default'];
     }
+    prevNoteColor = noteColor;
     noteColor = new THREE.Color(
       colors[currIndex % colors.length]);
     // noteColor = new THREE.Color(0, 0, 0);
@@ -274,7 +278,7 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
 
   hiFreqNormal = THREE.Math.clamp(
     THREE.Math.lerp(hiFreqNormal, 0, 
-    TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
+      noteTween), // TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
     0, 1);
   // debugGraphics(hiFreqNormal);
 
@@ -341,11 +345,18 @@ function animate() {
   cube.rotation.y += 0.01;
   cube.geometry.attributes.position.needsUpdate = true;
   cube.geometry.attributes.color.needsUpdate = true;
+  noteTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
+  bkndTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 500);
 
   if (past_chords.length > 0) {
-    var prevChordColor = new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
-    bkndColor = prevChordColor.lerp(new THREE.Color('#000000'), 0.7);
-    background.material.uniforms.color1.value = bkndColor;
+    var prevChordColor = //new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
+    bkndColor = new THREE.Color(noteColor);
+    var black = new THREE.Color('#000000');
+    // bkndColor = prevChordColor.lerp(black, 0.7);
+    bkndColor = bkndColor.lerp(black, 0.7);
+    var prevBkndColor = new THREE.Color(prevNoteColor);
+    prevBkndColor = prevBkndColor.lerp(black, 0.7);
+    background.material.uniforms.color1.value = prevBkndColor.lerp(bkndColor, noteTween);
 
   //   TWEEN.Tween.
   // hiFreqNormal = THREE.Math.clamp(
