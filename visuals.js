@@ -6,18 +6,18 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-// Create geometry object
+// Create bassGeo object
 // var geoRef = new THREE.BoxGeometry ( 1, 1, 1 );
 var geoRef = new THREE.IcosahedronGeometry (1, 1);
 geoRef.computeVertexNormals();
-var geometry = new THREE.BufferGeometry();
-geometry.fromGeometry(geoRef);
+var bassGeo = new THREE.BufferGeometry();
+bassGeo.fromGeometry(geoRef);
 
 // References to buffers that control objects' look
-var positions = geometry.getAttribute( 'position' );
-var normals = geometry.getAttribute( 'normal' );
-geometry.computeVertexNormals();
-var colors = geometry.getAttribute( 'color' );
+var positions = bassGeo.getAttribute( 'position' );
+var normals = bassGeo.getAttribute( 'normal' );
+bassGeo.computeVertexNormals();
+var colors = bassGeo.getAttribute( 'color' );
 
 var vertBase = [];
 var vertOffset = [];
@@ -34,7 +34,7 @@ for(var i = 0; i < geoRef.faces.length; i++)
   indices.setXYZ(i, face.a, face.b, face.c);
 }
 
-// Set up mapping between geometry vertex and all the
+// Set up mapping between bassGeo vertex and all the
 // corresponding triangle positions
 var max = Math.max.apply(null, indices.array);
 var vertexMap = [];
@@ -46,14 +46,14 @@ for(var i = 0; i < indices.array.length; i++)
   {
     vertexMap[indices.array[i]].push(i);
   }
-geometry.addAttribute ( 'indices', indices );
+bassGeo.addAttribute ( 'indices', indices );
 
 
 // // Create default material - unshaded
 var material = new THREE.MeshBasicMaterial( 0x00ff00 );
 material.vertexColors = THREE.FaceColors;
-var cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+var bassObj = new THREE.Mesh( bassGeo, material );
+scene.add( bassObj );
 
 // background object for shader
 var uniforms = {
@@ -77,21 +77,38 @@ var material = new THREE.ShaderMaterial({
 });
 
 
-var geometry = new THREE.Geometry();
+var bassGeo = new THREE.Geometry();
 
-geometry.vertices.push(
+bassGeo.vertices.push(
   new THREE.Vector3( -10,  10, -5 ),
   new THREE.Vector3( -10, -10, -5 ),
   new THREE.Vector3(  10, -10, -5 ),
   new THREE.Vector3(  10,  10, -5 )
 );
 
-geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
-geometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
+bassGeo.faces.push( new THREE.Face3( 0, 1, 2 ) );
+bassGeo.faces.push( new THREE.Face3( 0, 2, 3 ) );
 
 
-var background = new THREE.Mesh(geometry, material);
+var background = new THREE.Mesh(bassGeo, material);
 scene.add(background);
+
+var melodyBaseColor = new THREE.Color('#00ffff');
+var melodyGeo = new THREE.ConeGeometry(0.1, 0.3);
+for(var i = 0 ; i < melodyGeo.colors.count; i++)
+{
+  var rand = 0.1 * (Math.random() - 0.5);
+  melodyGeo.colors[i] = new THREE.Color(
+    melodyBaseColor.r + rand,
+    melodyBaseColor.g + rand,
+    melodyBaseColor.b + rand
+  );
+}
+var melodyMat = new THREE.MeshBasicMaterial({ color: melodyBaseColor, });
+var melodyObj = new THREE.Mesh(melodyGeo, melodyMat);
+
+scene.add(melodyObj);
+melodyObj.rotation.z = -Math.PI / 2.0;
 
 
 
@@ -247,7 +264,7 @@ function setNormalBasedColor(normalToColor, noise)
       (normals.getX(i) + normals.getX(i+1) + normals.getX(i+2)) * 0.333,
       (normals.getY(i) + normals.getY(i+1) + normals.getY(i+2)) * 0.333,
       (normals.getZ(i) + normals.getZ(i+1) + normals.getZ(i+2)) * 0.333
-    ).normalize().applyEuler(cube.rotation);
+    ).normalize().applyEuler(bassObj.rotation);
     var n = vertNoise[i] * noise - (noise/2);
     var c = normalToColor(i, normal);
     colors.setXYZ(i+0, c.r + n, c.g + n, c.b + n);
@@ -303,7 +320,7 @@ for(var i = 0; i < vertexMap.length; i++)
     normals.getX(n),
     normals.getY(n),
     normals.getZ(n)
-  ).normalize().applyEuler(cube.rotation);
+  ).normalize().applyEuler(bassObj.rotation);
 
   var hiFreqNormal = notePulse(normalVec, currIndex, numNotes, noteTime, getTimestamp());
 
@@ -337,14 +354,23 @@ for(var i = 0; i < vertexMap.length; i++)
 camera.position.z = 5;
 t = 0;
 function animate() {
-  t += 0.0166;
+  var dt = -0.0166;
+  t += dt;
   makeThisLookCool(t);
 	requestAnimationFrame( animate );
 	renderer.render( scene, camera );
-  // cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-  cube.geometry.attributes.position.needsUpdate = true;
-  cube.geometry.attributes.color.needsUpdate = true;
+  // bassObj.rotation.x += 0.01;
+  bassObj.rotation.y += 0.01;
+  bassObj.geometry.attributes.position.needsUpdate = true;
+  bassObj.geometry.attributes.color.needsUpdate = true;
+  melodyObj.position = new THREE.Vector3(
+    1, 1, 1
+  );
+  melodyObj.rotation.z -= dt;
+  var radius = 2.0;
+  melodyObj.position.y = radius * -Math.cos(t);
+  melodyObj.position.x = radius * -Math.sin(t);
+  // melodyObj.rotation.x += 0.01;
   noteTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
   bkndTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 500);
 
