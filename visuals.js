@@ -1,12 +1,14 @@
 var NEXT_MELODY_NOTES = 8;
 var MIN_MELODY_RADIUS = 1.5;
-var MAX_MELODY_RADIUS = 2.5;
+var MAX_MELODY_RADIUS = 2.0;
 
 var numNotes = -1;
 var nextNumNotes = -1;
 var currIndex = -1;
 var noteTime = -1;
-var noteTween = 0;
+var melodyTime = -1;
+var bassTween = 0;
+var melodyTween = 0;
 var bkndTween = 0;
 var newChordReady = false;
 var chordObj = undefined;
@@ -109,21 +111,28 @@ bassGeo.faces.push( new THREE.Face3( 0, 2, 3 ) );
 var background = new THREE.Mesh(bassGeo, material);
 scene.add(background);
 
-// Melody shape
-var melodyBaseColor = new THREE.Color('#00ffff');
-var melodyGeo = new THREE.ConeGeometry(0.1, 0.3);
-var melodyMat = new THREE.MeshBasicMaterial({ color: melodyBaseColor, });
+var melodyBaseColor = new THREE.Color('#00cc99');
+var melodyGeo = new THREE.OctahedronGeometry(0.15, 0);
+
+var melodyMat = new THREE.MeshBasicMaterial(0x000000);
 melodyMat.vertexColors = THREE.FaceColors;
-var melodyObj = new THREE.Mesh(melodyGeo, melodyMat);
-for(var i = 0 ; i < melodyGeo.colors.length; i++)
+
+for(var i = 0 ; i < melodyGeo.faces.length; i++)
 {
-  var rand = 0.1 * (Math.random() - 0.5);
-  melodyGeo.colors[i] = new THREE.Color(
+  var rand = 0.3 * (Math.random() - 0.5);
+  var c = new THREE.Color(
     melodyBaseColor.r + rand,
     melodyBaseColor.g + rand,
-    melodyBaseColor.b + rand
-  );
+    melodyBaseColor.b + rand);
+
+  melodyGeo.faces[i].color.r = c.r;
+  melodyGeo.faces[i].color.g = c.g;
+  melodyGeo.faces[i].color.b = c.b;
 }
+
+var melodyObj = new THREE.Mesh(melodyGeo, melodyMat);
+scene.add(melodyObj);
+// melodyObj.scale.y = 0.3;
 
 function generateCirclePoints(numPoints, radius, radiusMultipliers = [])
 {
@@ -145,57 +154,6 @@ function generateCirclePoints(numPoints, radius, radiusMultipliers = [])
   }
   return pts;
 }
-
-function debugPathPoints(points)
-{
-  // Clear previous debug points
-  for(var i = 0; i < debugPointsObjs.length; i++)
-  {
-    scene.remove(debugPointsObjs[i]);
-  }
-  debugPointsObjs = [];
-  // Melody path shape
-  var pointBaseColor = new THREE.Color('#888888');
-  for(var i = 0; i < points.length; i++)
-  {
-    // console.log(melodyPath.points[i]);
-    var pointGeo = new THREE.SphereGeometry(0.1);
-    var pointMat = new THREE.MeshBasicMaterial({ color: pointBaseColor, });
-    pointMat.vertexColors = THREE.FaceColors;
-    var pointObj = new THREE.Mesh(pointGeo, pointMat);
-
-    // console.log("colors: " + pointGeo.colors.length);
-    // for(var i = 0 ; i < pointGeo.colors.count; i++)
-    // {
-    //   var rand = 0.1 * (Math.random() - 0.5);
-    //   pointGeo.colors[i] = new THREE.Color(
-    //     melodyBaseColor.r + rand,
-    //     melodyBaseColor.g + rand,
-    //     melodyBaseColor.b + rand
-    //   );
-    // }
-
-    pointObj.position.x = points[i].x;
-    pointObj.position.y = points[i].y;
-    pointObj.position.z = points[i].z;
-
-    scene.add(pointObj);
-    debugPointsObjs.push(pointObj);
-  }
-}
-
-
-var melodyPathPoints = generateCirclePoints(
-  NEXT_MELODY_NOTES, lerp(MIN_MELODY_RADIUS, MAX_MELODY_RADIUS, 0.5));
-console.log(melodyPathPoints);
-var melodyPath = new THREE.CatmullRomCurve3(
-  melodyPathPoints, true, 'catmullrom', 0.5);
-
-var debugPointsObjs = [];
-scene.add(melodyObj);
-
-debugPathPoints(melodyPathPoints);
-
 
 // Create noise map to create variations in each vertex
 var simplex = new SimplexNoise();
@@ -264,16 +222,18 @@ for(var i = 0; i < colors.count; i++)
 
 function onMelodyPlayedCallback(note, timeMS)
 {
-  // Update melody path points
-  var radiusMults = [];
-  for(var i = 0; i < NEXT_MELODY_NOTES; i++)
-  {
-    radiusMults.push(lerp(MIN_MELODY_RADIUS, MAX_MELODY_RADIUS, Math.random()));
-  }
-  var newPoints = generateCirclePoints(NEXT_MELODY_NOTES, 1.0, radiusMults);
-  melodyPathPoints = newPoints;
-  melodyPath.points = newPoints;
-  debugPathPoints(newPoints);
+  melodyNote = note;
+  melodyTime = timeMS;
+  // new TWEEN.Tween(melodyTween)
+  //   .to(1.0, 200)
+  //   .onUpdate(function(melodyTween) {
+  //     console.log(val);
+  //     // melodyTween = val;
+  //   })
+  //   .start();
+  //   // .chain(new TWEEN.Tween(melodyTween)
+  //   //   .to(0, 800))
+  //   // .start();
 }
 
 function onNotePlayedCallback(note, timeMS)
@@ -377,14 +337,14 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
 
   hiFreqNormal = THREE.Math.clamp(
     THREE.Math.lerp(hiFreqNormal, 0, 
-      noteTween), // TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
+      bassTween), // TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
     0, 1);
   // debugGraphics(hiFreqNormal);
 
   return hiFreqNormal;
 }
 
-function makeThisLookCool(time)
+function animateBassViz(time)
 {
   // setNormalBasedColor(function(normal) {
   //   return new THREE.Color(normal.x, normal.y, normal.z);
@@ -433,34 +393,51 @@ for(var i = 0; i < vertexMap.length; i++)
 }
 }
 
+function animateMelodyViz(time)
+{
+  // melodyObj.position.y = radius * -Math.cos(t);
+  // melodyObj.position.x = radius * -Math.sin(t);
+  var melodySpeed = (bpm / 60.0) * 4 / (2.0 * Math.PI)
+
+  melodyTween = (getTimestamp() - melodyTime < 200) ?
+    TWEEN.Easing.Cubic.Out((getTimestamp() - melodyTime) / 200) :
+    1.0 - TWEEN.Easing.Cubic.InOut((getTimestamp() - melodyTime) / 1100);
+  melodyTween = THREE.Math.clamp(melodyTween, 0, 1);
+
+  // console.log(melodyTween);
+  var radius = lerp(MIN_MELODY_RADIUS, MAX_MELODY_RADIUS, 
+    (melodyTween));
+  var melodyT = melodySpeed * time - Math.floor(melodySpeed * time);
+  var melodyPoint = new THREE.Vector3(
+    radius * -Math.sin(time * melodySpeed),
+    radius * -Math.cos(time * melodySpeed),
+    radius * 0.0
+  );
+  melodyObj.position.x = melodyPoint.x;
+  melodyObj.position.y = melodyPoint.y;
+  melodyObj.position.z = melodyPoint.z;
+  var rot = (Math.PI / 2.0) + melodyT * Math.PI * 2.0;
+  melodyObj.rotation.y = rot;
+  melodyObj.rotation.z = rot;
+
+}
+
 camera.position.z = 5;
 t = 0;
 function animate() {
   var dt = 0.0166;
   t += dt;
-  makeThisLookCool(t);
+  animateBassViz(t);
+  animateMelodyViz(t);
 	requestAnimationFrame( animate );
+  TWEEN.update(t * 1000);
 	renderer.render( scene, camera );
   // bassObj.rotation.x += 0.01;
   bassObj.rotation.y += 0.01;
   bassObj.geometry.attributes.position.needsUpdate = true;
   bassObj.geometry.attributes.color.needsUpdate = true;
-  melodyObj.position = new THREE.Vector3(
-    1, 1, 1
-  );
-  var radius = lerp(MIN_MELODY_RADIUS, MAX_MELODY_RADIUS, 
-    (Math.sin(t) + 1) / 2.0);
-  // melodyObj.position.y = radius * -Math.cos(t);
-  // melodyObj.position.x = radius * -Math.sin(t);
-  var melodySpeed = (bpm / 60.0) / (2.0 * Math.PI)
-  var melodyT = melodySpeed * t - Math.floor(melodySpeed * t);
-  var melodyPoint = melodyPath.getPoint(melodyT);
-  melodyObj.position.x = melodyPoint.x;
-  melodyObj.position.y = melodyPoint.y;
-  melodyObj.position.z = melodyPoint.z;
-  melodyObj.rotation.z = -(Math.PI / 2.0) + melodyT * Math.PI * 2.0;
   // melodyObj.rotation.x += 0.01;
-  noteTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
+  bassTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
   bkndTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 500);
 
   if (past_chords.length > 0) {
@@ -471,7 +448,7 @@ function animate() {
     bkndColor = bkndColor.lerp(black, 0.7);
     var prevBkndColor = new THREE.Color(prevNoteColor);
     prevBkndColor = prevBkndColor.lerp(black, 0.7);
-    background.material.uniforms.color1.value = prevBkndColor.lerp(bkndColor, noteTween);
+    background.material.uniforms.color1.value = prevBkndColor.lerp(bkndColor, bassTween);
 
   //   TWEEN.Tween.
   // hiFreqNormal = THREE.Math.clamp(
