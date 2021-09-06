@@ -16,11 +16,11 @@ var newChordReady = false;
 var chordObj = undefined;
 var noteColor = new THREE.Color('#000000');
 var prevNoteColor = new THREE.Color('#000000');
-var bkndColor = new THREE.Color('#000000');
+var bkndColor = new THREE.Color('#00000');
 
 // Create basic scene
 var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 5 );
+var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10 );
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -100,10 +100,10 @@ var material = new THREE.ShaderMaterial({
 var bassGeo = new THREE.Geometry();
 
 bassGeo.vertices.push(
-  new THREE.Vector3( -10,  10, -5 ),
-  new THREE.Vector3( -10, -10, -5 ),
-  new THREE.Vector3(  10, -10, -5 ),
-  new THREE.Vector3(  10,  10, -5 )
+  new THREE.Vector3( -50,  50, -5 ),
+  new THREE.Vector3( -50, -50, -5 ),
+  new THREE.Vector3(  50, -50, -5 ),
+  new THREE.Vector3(  50,  50, -5 )
 );
 
 bassGeo.faces.push( new THREE.Face3( 0, 1, 2 ) );
