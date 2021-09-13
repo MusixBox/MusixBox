@@ -159,11 +159,12 @@ function init3DScene()
    */
   var backgroundGeo = new THREE.Geometry();
 
+  // Background size set to accommodate most any aspect ratio
   backgroundGeo.vertices.push(
-    new THREE.Vector3( -50,  50, -5 ),
-    new THREE.Vector3( -50, -50, -5 ),
-    new THREE.Vector3(  50, -50, -5 ),
-    new THREE.Vector3(  50,  50, -5 )
+    new THREE.Vector3( -1000,  1000, -5 ),
+    new THREE.Vector3( -1000, -1000, -5 ),
+    new THREE.Vector3(  1000, -1000, -5 ),
+    new THREE.Vector3(  1000,  1000, -5 )
   );
 
   backgroundGeo.faces.push( new THREE.Face3( 0, 1, 2 ) );
