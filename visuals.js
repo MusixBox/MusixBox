@@ -471,6 +471,7 @@ function animate(time) {
     bkndColor = new THREE.Color(noteColor);
     var black = new THREE.Color('#000000');
 
+    // Background color is a darker version of the sphere color
     bkndColor = bkndColor.lerp(black, 0.7);
     var prevBkndColor = new THREE.Color(prevNoteColor);
     prevBkndColor = prevBkndColor.lerp(black, 0.7);
