@@ -53,14 +53,13 @@ var newChordReady = false;
 var chordObj = undefined;
 var noteColor = new THREE.Color('#000000');
 var prevNoteColor = new THREE.Color('#000000');
-var bkndColor = new THREE.Color('#000000');
+var bkndColor = new THREE.Color('#00000');
 
 /**
  * Initial setup
  * 
  */
 init3DScene();
-
 
 function init3DScene()
 {
@@ -158,10 +157,10 @@ function init3DScene()
   var backgroundGeo = new THREE.Geometry();
 
   backgroundGeo.vertices.push(
-    new THREE.Vector3( -10,  10, -5 ),
-    new THREE.Vector3( -10, -10, -5 ),
-    new THREE.Vector3(  10, -10, -5 ),
-    new THREE.Vector3(  10,  10, -5 )
+    new THREE.Vector3( -50,  50, -5 ),
+    new THREE.Vector3( -50, -50, -5 ),
+    new THREE.Vector3(  50, -50, -5 ),
+    new THREE.Vector3(  50,  50, -5 )
   );
 
   backgroundGeo.faces.push( new THREE.Face3( 0, 1, 2 ) );
