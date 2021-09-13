@@ -138,11 +138,9 @@ function init3DScene()
     // Background color
     "color1" : {
       type : "c",
-      // value : new THREE.Color(parseInt(colormap[nextBase][0].slice(1, 10), 16)),
       value : new THREE.Color('#000000'),
     },
   };
-  // yourMesh.material.uniforms.yourUniform.value = whatever;
 
   // Finish material
   var backgroundMat = new THREE.ShaderMaterial({
@@ -198,7 +196,6 @@ function init3DScene()
     
   melodyObj = new THREE.Mesh(melodyGeo, melodyMat);
   scene.add(melodyObj);
-  // melodyObj.scale.y = 0.3;
 
   // Create noise map to create variations in each vertex
   var simplex = new SimplexNoise();
@@ -276,16 +273,6 @@ function onMelodyPlayedCallback(note, timeMS)
 {
   melodyNote = note;
   melodyTime = timeMS;
-  // new TWEEN.Tween(melodyTween)
-  //   .to(1.0, 200)
-  //   .onUpdate(function(melodyTween) {
-  //     console.log(val);
-  //     // melodyTween = val;
-  //   })
-  //   .start();
-  //   // .chain(new TWEEN.Tween(melodyTween)
-  //   //   .to(0, 800))
-  //   // .start();
 }
 
 function onNotePlayedCallback(note, timeMS)
@@ -313,11 +300,6 @@ function onNotePlayedCallback(note, timeMS)
     prevNoteColor = noteColor;
     noteColor = new THREE.Color(
       colors[currIndex % colors.length]);
-    // debugGraphics(
-    //   String.format("Note played: {0} {1} {2}{3} ({4} of {5})", 
-    //     tone, octave, sharp ? "SHARP" : "", flat ? "FLAT" : "",
-    //     currIndex + 1, numNotes)
-    //   );
   }
 }
 
@@ -325,10 +307,6 @@ function onChordPlayedCallback(chord, timeMS)
 {
   if(chord != undefined)
   {
-    // debugGraphics(
-    //   String.format("Chord played: {0}: {1}",
-    //    chord.name,
-    //    chord.notes));
     chordObj = chord;
     nextNumNotes = chord.notes.length;
     newChordReady = true;
@@ -381,14 +359,11 @@ function notePulse(normalVec, currIndex, numNotes, noteTime, time)
     hiFreqNormal = Math.pow(Math.abs(Math.cos(Math.PI/8.0 + normalVec.angleTo(up) + Math.PI * (step))), 8);
   }
   
-  
-  // hiFreqNormal = THREE.Math.clamp(THREE.Math.lerp(hiFreqNormal, 0, (time - noteTime) / 700), 0, 1);
-
   // console.log(time - noteTime);
 
   hiFreqNormal = THREE.Math.clamp(
     THREE.Math.lerp(hiFreqNormal, 0, 
-      bassTween), // TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
+      bassTween),
     0, 1);
   // debugGraphics(hiFreqNormal);
 
@@ -406,9 +381,6 @@ function animateBassViz(time)
   // Offset the position using simplex noise
   for(var i = 0; i < vertexMap.length; i++)
   {
-    //var offset = 0.0;
-    var up = new THREE.Vector3(0, 1, 0);
-
     var n = vertexMap[i][0];
     var normalVec = new THREE.Vector3(
       bassNormals.getX(n),
@@ -428,27 +400,16 @@ function animateBassViz(time)
     var baseAmplitude = 0.05;
     var baseFreq = 5;
     var mult = 10;
-    // var mult = 1;
 
     var amplitude = lerp(baseAmplitude, baseAmplitude * mult, hiFreqNormal);
     var freq = lerp(baseFreq, baseFreq * mult, hiFreqNormal) * lerp(0.9, 1.2, vertNoise[n]);
-    // debugGraphics(amplitude + " " + freq);
-    // var freq = 10 * lerp(0.6, 1.0, vertNoise[i]);
-    // setVertexOffset(i, normalVec.multiplyScalar(
-    //   amplitude * Math.cos(freq * time)));
     setVertexOffset(vertexMap, i, normalVec.multiplyScalar(
       amplitude * Math.sin(freq * time)));
-    // var pulse = lerp(0, 0.5, hiFreqNormal) * lerp(0.9, 1.2, vertNoise[n]);
-
-    // setVertexOffset(i, normalVec.multiplyScalar(pulse));
-    // setVertexOffset(i, new THREE.Vector3(0, 0, 0));
   }
 }
 
 function animateMelodyViz(time)
 {
-  // melodyObj.position.y = radius * -Math.cos(t);
-  // melodyObj.position.x = radius * -Math.sin(t);
   var melodySpeed = (bpm / 60.0) * 4 / (2.0 * Math.PI)
 
   melodyTween = (getTimestamp() - melodyTime < 200) ?
@@ -496,28 +457,23 @@ function animate(time) {
   requestAnimationFrame( animate );
   TWEEN.update(t * 1000);
   renderer.render( scene, camera );
+
   // bassObj.rotation.x += 0.01;
   bassObj.rotation.y += 0.01;
   bassObj.geometry.attributes.position.needsUpdate = true;
   bassObj.geometry.attributes.color.needsUpdate = true;
+
   // melodyObj.rotation.x += 0.01;
   bassTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 1500);
   bkndTween = TWEEN.Easing.Cubic.Out((getTimestamp() - noteTime) / 500);
 
   if (past_chords.length > 0) {
-    var prevChordColor = //new THREE.Color(parseInt(colormap[past_chords[past_chords.length-1][1].name][0].slice(1, 10), 16));
     bkndColor = new THREE.Color(noteColor);
     var black = new THREE.Color('#000000');
-    // bkndColor = prevChordColor.lerp(black, 0.7);
+
     bkndColor = bkndColor.lerp(black, 0.7);
     var prevBkndColor = new THREE.Color(prevNoteColor);
     prevBkndColor = prevBkndColor.lerp(black, 0.7);
     backgroundObj.material.uniforms.color1.value = prevBkndColor.lerp(bkndColor, bassTween);
-
-  //   TWEEN.Tween.
-  // hiFreqNormal = THREE.Math.clamp(
-  //   THREE.Math.lerp(hiFreqNormal, 0, 
-  //   TWEEN.Easing.Cubic.Out((time - noteTime) / 1500)),
-  //   0, 1);
   }
 }
