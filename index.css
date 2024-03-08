@@ -8,6 +8,14 @@
   transform: translate(-50%, -50%);
 }
 
+#click-banner {
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .centerbox {
   /* flexbox, por favor */
   display: -webkit-box;

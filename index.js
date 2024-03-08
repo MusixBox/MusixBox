@@ -2,6 +2,11 @@
 
 // StartAudioContext(Tone.context);
 
+// Remove click banner.
+function removeClickBanner() {
+  document.getElementById("click-banner").remove();
+}
+
 var synth = new Tone.PolySynth(10, Tone.Synth).toMaster();
 
 
